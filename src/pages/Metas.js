@@ -486,6 +486,8 @@ function Metas() {
                     dateFormat="dd/MM/yyyy"
                     locale={ptBR}
                     placeholderText="Selecione uma data"
+                    withPortal
+                    portalId="finanzas-datepicker-portal"
                     customInput={
                       <Input
                         color="white"

@@ -592,3 +592,18 @@ input:focus, select:focus, textarea:focus {
   transform: translateZ(0);
   will-change: transform;
 }
+
+.react-datepicker__portal {
+  position: fixed !important;
+  inset: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background-color: rgba(0, 0, 0, 0.75) !important;
+  z-index: 9999 !important;
+}
+
+.react-datepicker__portal .react-datepicker {
+  max-height: 90vh !important;
+  overflow-y: auto !important;
+}

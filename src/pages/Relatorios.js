@@ -302,7 +302,7 @@ function Relatorios() {
             margin: { top: 10, left: 10, right: 10 },
             didDrawPage: (data) => {
                 pdf.setFontSize(14);
-                pdf.text("💰 Entradas", 14, 30);
+                pdf.text("Entradas", 14, 30);
             }
         });
         
@@ -327,7 +327,7 @@ function Relatorios() {
             margin: { top: 10, left: 10, right: 10 },
             didDrawPage: (data) => {
                 pdf.setFontSize(14);
-                pdf.text("💸 Saídas", 14, startY + 15);
+                pdf.text("Saídas", 14, startY + 15);
             }
         });
 
@@ -424,10 +424,7 @@ function Relatorios() {
                 <Stat>
                   <StatLabel color="whiteAlpha.800" fontSize="sm">💰 Total de Entradas</StatLabel>
                   <StatNumber fontSize="3xl" color="white">{formatCurrency(totalEntradas)}</StatNumber>
-                  <StatHelpText color="green.300" mb={0}>
-                    <StatArrow type="increase" />
-                    +12.5% vs mês anterior
-                  </StatHelpText>
+                  {formatPercentual(percentualEntradas)}
                 </Stat>
               </GlassCard>
             </MotionBox>
@@ -437,10 +434,7 @@ function Relatorios() {
                 <Stat>
                   <StatLabel color="whiteAlpha.800" fontSize="sm">💸 Total de Saídas</StatLabel>
                   <StatNumber fontSize="3xl" color="white">{formatCurrency(totalSaidas)}</StatNumber>
-                  <StatHelpText color="red.300" mb={0}>
-                    <StatArrow type="decrease" />
-                    -8.3% vs mês anterior
-                  </StatHelpText>
+{formatPercentual(percentualSaidas)}
                 </Stat>
               </GlassCard>
             </MotionBox>

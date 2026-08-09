@@ -6,6 +6,7 @@ import {
   VStack,
   HStack,
   Text,
+  Select,
   Switch,
   useDisclosure,
   AlertDialog,
@@ -35,6 +36,7 @@ import axios from "axios";
 import { useAuth } from '../auth/AuthContext';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import MonthNavigator from "../components/MonthNavigator";
 import { ptBR } from "date-fns/locale";
 
 const MotionBox = motion(Box);
@@ -78,13 +80,24 @@ const GlassCard = ({ children, gradient, ...props }) => (
   </MotionBox>
 );
 
+const categoriaConfig = {
+  salario: { icon: "💼", label: "Salário", gradient: "linear(to-r, #667eea, #764ba2)", color: "#667eea" },
+  freelance: { icon: "💻", label: "Freelance", gradient: "linear(to-r, #4facfe, #00f2fe)", color: "#4facfe" },
+  investimento: { icon: "📈", label: "Investimento", gradient: "linear(to-r, #11998e, #38ef7d)", color: "#11998e" },
+  presente: { icon: "🎁", label: "Presente", gradient: "linear(to-r, #f093fb, #f5576c)", color: "#f093fb" },
+  reembolso: { icon: "↩️", label: "Reembolso", gradient: "linear(to-r, #fc4a1a, #f7b733)", color: "#fc4a1a" },
+  outros: { icon: "💰", label: "Outros", gradient: "linear(to-r, #a8edea, #fed6e3)", color: "#a8edea" },
+};
+
 function Entradas() {
   const [entradas, setEntradas] = useState([]);
-  const [novaEntrada, setNovaEntrada] = useState({
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+const [novaEntrada, setNovaEntrada] = useState({
     descricao: "",
     valor: "",
     data: "",
-    salario: false,
+    categoria: "outros",
   });
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [entradaParaExcluir, setEntradaParaExcluir] = useState(null);
@@ -101,12 +114,9 @@ function Entradas() {
       const userId = currentUser.uid;
       const response = await axios.get(`http://localhost:8080/api/entradas?userId=${userId}`);
       
-      const currentDate = new Date();
-      const currentMonth = currentDate.getMonth();
-      const currentYear = currentDate.getFullYear();
-      const entradasDoMes = response.data.filter(entrada => {
+  const entradasDoMes = response.data.filter(entrada => {
         const dataEntrada = new Date(entrada.data);
-        return dataEntrada.getMonth() === currentMonth && dataEntrada.getFullYear() === currentYear;
+        return dataEntrada.getMonth() === selectedMonth && dataEntrada.getFullYear() === selectedYear;
       });
       setEntradas(entradasDoMes);
     } catch (error) {
@@ -122,9 +132,9 @@ function Entradas() {
     }
   };
 
-  useEffect(() => {
+useEffect(() => {
     fetchEntradas();
-  }, [currentUser]);
+  }, [currentUser, selectedMonth, selectedYear]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -181,7 +191,7 @@ function Entradas() {
           position: "top-right",
         });
       }
-      setNovaEntrada({ descricao: "", valor: "", data: "", salario: false });
+      setNovaEntrada({ descricao: "", valor: "", data: "", categoria: "outros" });
       setMostrarFormulario(false);
       setEntradaParaEditar(null);
       fetchEntradas();
@@ -196,10 +206,11 @@ function Entradas() {
     }
   };
 
-  const iniciarEdicao = (entrada) => {
+const iniciarEdicao = (entrada) => {
     setNovaEntrada({
       ...entrada,
       valor: Number(entrada.valor),
+      categoria: entrada.categoria || "outros",
     });
     setEntradaParaEditar(entrada);
     setMostrarFormulario(true);
@@ -249,7 +260,7 @@ function Entradas() {
   };
 
   const totalEntradas = entradas.reduce((acc, e) => acc + Number(e.valor), 0);
-  const totalSalarios = entradas.filter(e => e.salario).reduce((acc, e) => acc + Number(e.valor), 0);
+const totalSalarios = entradas.filter(e => e.categoria === "salario").reduce((acc, e) => acc + Number(e.valor), 0);
   const totalOutros = totalEntradas - totalSalarios;
 
   const containerVariants = {
@@ -291,7 +302,7 @@ function Entradas() {
           <Button
             onClick={() => {
               setMostrarFormulario(!mostrarFormulario);
-              setNovaEntrada({ descricao: "", valor: "", data: "", salario: false });
+              setNovaEntrada({ descricao: "", valor: "", data: "", categoria: "outros" });
               setEntradaParaEditar(null);
             }}
             size="lg"
@@ -310,6 +321,13 @@ function Entradas() {
           </Button>
         </Flex>
 
+        <MonthNavigator
+                  month={selectedMonth}
+                  year={selectedYear}
+                  onChange={(m, y) => { setSelectedMonth(m); setSelectedYear(y); }}
+                  gradient="linear(to-r, #11998e, #38ef7d)"
+        />
+
         <SimpleGrid columns={{ base: 1, md: 3 }} spacing={6}>
           <GlassCard gradient="linear(to-br, #11998e, #38ef7d)">
             <Stat>
@@ -325,8 +343,8 @@ function Entradas() {
             <Stat>
               <StatLabel color="whiteAlpha.800" fontSize="sm">💼 Salários</StatLabel>
               <StatNumber fontSize="3xl" color="white">{formatCurrency(totalSalarios)}</StatNumber>
-              <StatHelpText color="purple.300" mb={0}>
-                {entradas.filter(e => e.salario).length} recebimento(s)
+          <StatHelpText color="purple.300" mb={0}>
+                {entradas.filter(e => e.categoria === "salario").length} recebimento(s)
               </StatHelpText>
             </Stat>
           </GlassCard>
@@ -421,6 +439,8 @@ function Entradas() {
                     dateFormat="dd/MM/yyyy"
                     locale={ptBR}
                     placeholderText="Selecione uma data"
+                    withPortal
+                    portalId="finanzas-datepicker-portal"
                     customInput={
                       <Input
                         color="white"
@@ -436,29 +456,30 @@ function Entradas() {
                   />
                 </FormControl>
 
-                <Flex 
-                  p={4} 
-                  bg="rgba(255, 255, 255, 0.1)" 
-                  borderRadius="xl" 
-                  align="center" 
-                  justify="space-between"
-                >
-                  <HStack>
-                    <Text fontSize="2xl">💼</Text>
-                    <VStack align="start" spacing={0}>
-                      <Text color="white" fontWeight="semibold">Recebimento de Salário?</Text>
-                      <Text fontSize="xs" color="whiteAlpha.600">Marque se for salário mensal</Text>
-                    </VStack>
-                  </HStack>
-                  <Switch
+        <FormControl>
+                  <FormLabel color="whiteAlpha.900" fontSize="sm" fontWeight="semibold">
+                    🏷️ Categoria
+                  </FormLabel>
+                  <Select
+                    name="categoria"
+                    value={novaEntrada.categoria}
+                    onChange={handleChange}
+                    color="white"
+                    bg="rgba(255, 255, 255, 0.1)"
+                    border="1px solid"
+                    borderColor="whiteAlpha.300"
+                    _hover={{ borderColor: 'whiteAlpha.400' }}
+                    _focus={{ borderColor: 'green.400', boxShadow: '0 0 0 1px #38ef7d' }}
                     size="lg"
-                    colorScheme="green"
-                    isChecked={novaEntrada.salario}
-                    onChange={(e) =>
-                      setNovaEntrada({ ...novaEntrada, salario: e.target.checked })
-                    }
-                  />
-                </Flex>
+                    borderRadius="xl"
+                  >
+                    {Object.entries(categoriaConfig).map(([key, cfg]) => (
+                      <option key={key} value={key} style={{ backgroundColor: '#191919' }}>
+                        {cfg.icon} {cfg.label}
+                      </option>
+                    ))}
+                  </Select>
+                </FormControl>
 
                 <Button
                   onClick={adicionarEntrada}
@@ -494,7 +515,7 @@ function Entradas() {
                 <Text fontSize="6xl">📭</Text>
                 <Heading size="md" color="white">Nenhuma entrada registrada</Heading>
                 <Text color="whiteAlpha.600" textAlign="center">
-                  Adicione sua primeira entrada para começar a acompanhar suas finanças
+                  Nenhuma entrada registrada neste mês.
                 </Text>
                 <Button
                   onClick={() => setMostrarFormulario(true)}
@@ -523,36 +544,39 @@ function Entradas() {
                     gap={4}
                   >
                     <HStack spacing={4} flex={1}>
-                      <Flex
+                  <Flex
                         w={12}
                         h={12}
-                        bgGradient="linear(to-br, #11998e, #38ef7d)"
+                        bgGradient={(categoriaConfig[entrada.categoria] || categoriaConfig.outros).gradient}
                         borderRadius="xl"
                         align="center"
                         justify="center"
                         fontSize="2xl"
                         flexShrink={0}
                       >
-                        {entrada.salario ? "💼" : "💰"}
+                        {(categoriaConfig[entrada.categoria] || categoriaConfig.outros).icon}
                       </Flex>
                       <VStack align="start" spacing={1}>
                         <Text color="white" fontWeight="bold" fontSize="lg">
                           {entrada.descricao}
                         </Text>
-                        <HStack spacing={2}>
+                        <HStack spacing={2} flexWrap="wrap">
                           <Text fontSize="sm" color="whiteAlpha.600">
                             📅 {formatDate(entrada.data)}
                           </Text>
-                          {entrada.salario && (
-                            <Badge
-                              bgGradient="linear(to-r, #667eea, #764ba2)"
-                              color="white"
-                              px={2}
-                              py={1}
-                              borderRadius="md"
-                              fontSize="xs"
-                            >
-                              💼 Salário
+                          <Badge
+                            bgGradient={(categoriaConfig[entrada.categoria] || categoriaConfig.outros).gradient}
+                            color="white"
+                            px={2}
+                            py={1}
+                            borderRadius="md"
+                            fontSize="xs"
+                          >
+                            {(categoriaConfig[entrada.categoria] || categoriaConfig.outros).icon} {(categoriaConfig[entrada.categoria] || categoriaConfig.outros).label}
+                          </Badge>
+                          {entrada.recorrenteId && (
+                            <Badge colorScheme="purple" px={2} py={1} borderRadius="md" fontSize="xs">
+                              🔁 Automática
                             </Badge>
                           )}
                         </HStack>

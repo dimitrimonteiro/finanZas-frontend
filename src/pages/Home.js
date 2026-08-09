@@ -289,10 +289,7 @@ function Dashboard() {
                   <StatNumber fontSize={{ base: "2xl", md: "3xl" }} color="white" fontWeight="black">
                     {formatCurrency(totalEntradas)}
                   </StatNumber>
-                  <StatHelpText color="green.300" mb={0}>
-                    <StatArrow type="increase" />
-                    12.5% vs mês anterior
-                  </StatHelpText>
+                  {formatPercentual(percentualEntradas)}
                 </Stat>
               </VStack>
             </GlassCard>
@@ -321,10 +318,7 @@ function Dashboard() {
                   <StatNumber fontSize={{ base: "2xl", md: "3xl" }} color="white" fontWeight="black">
                     {formatCurrency(totalSaidas)}
                   </StatNumber>
-                  <StatHelpText color="red.300" mb={0}>
-                    <StatArrow type="decrease" />
-                    8.3% vs mês anterior
-                  </StatHelpText>
+{formatPercentual(percentualSaidas)}
                 </Stat>
               </VStack>
             </GlassCard>

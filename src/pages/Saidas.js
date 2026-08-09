@@ -35,6 +35,7 @@ import { useAuth } from "../auth/AuthContext";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { ptBR } from "date-fns/locale";
+import MonthNavigator from "../components/MonthNavigator";
 
 const MotionBox = motion(Box);
 
@@ -79,6 +80,8 @@ const GlassCard = ({ children, gradient, ...props }) => (
 
 function Saidas() {
   const [saidas, setSaidas] = useState([]);
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [novaSaida, setNovaSaida] = useState({
     descricao: "",
     valor: "",
@@ -100,12 +103,9 @@ function Saidas() {
       const userId = currentUser.uid;
       const response = await axios.get(`http://localhost:8080/api/saidas?userId=${userId}`);
 
-      const currentDate = new Date();
-      const currentMonth = currentDate.getMonth();
-      const currentYear = currentDate.getFullYear();
-      const saidasDoMes = response.data.filter(saida => {
+const saidasDoMes = response.data.filter(saida => {
         const dataSaida = new Date(saida.data);
-        return dataSaida.getMonth() === currentMonth && dataSaida.getFullYear() === currentYear;
+        return dataSaida.getMonth() === selectedMonth && dataSaida.getFullYear() === selectedYear;
       });
       setSaidas(saidasDoMes);
     } catch (error) {
@@ -121,9 +121,9 @@ function Saidas() {
     }
   };
 
-  useEffect(() => {
+useEffect(() => {
     fetchSaidas();
-  }, [currentUser]);
+  }, [currentUser, selectedMonth, selectedYear]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -307,6 +307,13 @@ function Saidas() {
           </Button>
         </Flex>
 
+         <MonthNavigator
+          month={selectedMonth}
+          year={selectedYear}
+          onChange={(m, y) => { setSelectedMonth(m); setSelectedYear(y); }}
+          gradient="linear(to-r, #ee0979, #ff6a00)"
+        />
+
         <SimpleGrid columns={{ base: 1, md: 3 }} spacing={6}>
           <GlassCard gradient="linear(to-br, #ee0979, #ff6a00)">
             <Stat>
@@ -442,6 +449,8 @@ function Saidas() {
                     dateFormat="dd/MM/yyyy"
                     locale={ptBR}
                     placeholderText="Selecione uma data"
+                    withPortal
+                    portalId="finanzas-datepicker-portal"
                     customInput={
                       <Input
                         color="white"
@@ -514,7 +523,7 @@ function Saidas() {
                 <Text fontSize="6xl">📭</Text>
                 <Heading size="md" color="white">Nenhuma saída registrada</Heading>
                 <Text color="whiteAlpha.600" textAlign="center">
-                  Adicione sua primeira saída para começar a controlar seus gastos
+                  Nenhuma saída registrada neste mês.
                 </Text>
                 <Button
                   onClick={() => setMostrarFormulario(true)}
@@ -573,6 +582,11 @@ function Saidas() {
                           >
                             {saida.tipo === "fixa" ? "📌 Fixa" : "🔄 Variável"}
                           </Badge>
+                          {saida.recorrenteId && (
+                            <Badge colorScheme="purple" px={2} py={1} borderRadius="md" fontSize="xs">
+                              🔁 Automática
+                            </Badge>
+                          )}
                         </HStack>
                       </VStack>
                     </HStack>
