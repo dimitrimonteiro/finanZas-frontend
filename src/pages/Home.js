@@ -144,8 +144,9 @@ function Dashboard() {
     try {
       const userId = currentUser.uid;
       
-      const allEntradasResponse = await axios.get(`https://finanzas-backend-rmik.onrender.com/api/entradas?userId=${userId}`);
-      const allSaidasResponse = await axios.get(`https://finanzas-backend-rmik.onrender.com/api/saidas?userId=${userId}`);
+      await axios.post(`http://localhost:8080/api/recorrentes/gerar?userId=${userId}`);
+      const allEntradasResponse = await axios.get(`http://localhost:8080/api/entradas?userId=${userId}`);
+      const allSaidasResponse = await axios.get(`http://localhost:8080/api/saidas?userId=${userId}`);
       
       const allEntradas = allEntradasResponse.data;
       const allSaidas = allSaidasResponse.data;

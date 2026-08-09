@@ -42,6 +42,7 @@ import LoginPage from './pages/Login';
 import CadastroPage from './pages/Cadastro';
 import ProtectedRoutes from './ProtectedRoutes';
 import Metas from './pages/Metas';
+import Recorrentes from './pages/Recorrentes';
 
 import { AuthProvider, useAuth } from './auth/AuthContext';
 
@@ -55,6 +56,7 @@ const menuItems = [
   { name: 'Metas', path: '/metas', icon: '🎯', gradient: 'linear(to-r, #fc4a1a, #f7b733)' },
   { name: 'Relatórios', path: '/relatorios', icon: '📈', gradient: 'linear(to-r, #4facfe, #00f2fe)' },
   { name: 'Configurações', path: '/configuracoes', icon: '⚙️', gradient: 'linear(to-r, #a8edea, #fed6e3)' },
+  { name: 'Recorrências', path: '/recorrentes', icon: '🔁', gradient: 'linear(to-r, #a770ef, #cf8bf3)' },
 ];
 
 function Navigation() {

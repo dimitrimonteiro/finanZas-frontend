@@ -98,7 +98,7 @@ function Saidas() {
     if (!currentUser) return;
     try {
       const userId = currentUser.uid;
-      const response = await axios.get(`https://finanzas-backend-rmik.onrender.com/api/saidas?userId=${userId}`);
+      const response = await axios.get(`http://localhost:8080/api/saidas?userId=${userId}`);
 
       const currentDate = new Date();
       const currentMonth = currentDate.getMonth();
@@ -161,7 +161,7 @@ function Saidas() {
 
     try {
       if (saidaParaEditar) {
-        await axios.put(`https://finanzas-backend-rmik.onrender.com/api/saidas/${saidaParaEditar.id}?userId=${userId}`, payload);
+        await axios.put(`http://localhost:8080/api/saidas/${saidaParaEditar.id}?userId=${userId}`, payload);
         toast({ 
           title: "✅ Saída editada!", 
           status: "success", 
@@ -169,7 +169,7 @@ function Saidas() {
           position: "top-right",
         });
       } else {
-        await axios.post(`https://finanzas-backend-rmik.onrender.com/api/saidas?userId=${userId}`, payload);
+        await axios.post(`http://localhost:8080/api/saidas?userId=${userId}`, payload);
         toast({ 
           title: "🎉 Saída adicionada!", 
           status: "success", 
@@ -211,7 +211,7 @@ function Saidas() {
     if (!currentUser) return;
     const userId = currentUser.uid;
     try {
-      await axios.delete(`https://finanzas-backend-rmik.onrender.com/api/saidas/${saidaParaExcluir}?userId=${userId}`);
+      await axios.delete(`http://localhost:8080/api/saidas/${saidaParaExcluir}?userId=${userId}`);
       toast({ 
         title: "🗑️ Saída excluída", 
         status: "info", 
