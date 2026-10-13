@@ -34,6 +34,7 @@ import { motion } from 'framer-motion';
 import axios from "axios";
 import { useAuth } from '../auth/AuthContext';
 import { format } from 'date-fns';
+import { categoriaDe } from '../utils/categoriasSaida';
 
 const MotionBox = motion(Box);
 const MotionFlex = motion(Flex);
@@ -139,6 +140,8 @@ function Dashboard() {
   });
   const { currentUser } = useAuth();
 
+   const [alertasOrcamento, setAlertasOrcamento] = useState([]);
+
   const fetchDados = async () => {
     if (!currentUser) return;
     try {
@@ -197,7 +200,28 @@ function Dashboard() {
       });
       
       setEntradas(allEntradas);
-      setSaidas(allSaidas);
+            setSaidas(allSaidas);
+
+      // Alertas de orçamento (se falhar, não derruba o dashboard)
+      try {
+        const orcamentosResponse = await axios.get(`https://finanzas-backend-rmik.onrender.com/api/orcamentos?userId=${userId}`);
+        const gastoPorCategoria = {};
+        saidasMesAtual.forEach((s) => {
+          const cat = s.categoria || "outros";
+          gastoPorCategoria[cat] = (gastoPorCategoria[cat] || 0) + Number(s.valor);
+        });
+        const alertas = orcamentosResponse.data
+          .map((o) => {
+            const gasto = gastoPorCategoria[o.categoria] || 0;
+            const limite = Number(o.limite);
+            return { categoria: o.categoria, gasto, limite, pct: limite > 0 ? (gasto / limite) * 100 : 0 };
+          })
+          .filter((a) => a.pct >= 80)
+          .sort((a, b) => b.pct - a.pct);
+        setAlertasOrcamento(alertas);
+      } catch (e) {
+        console.error("Erro ao buscar orçamentos:", e);
+      }
 
     } catch (error) {
       console.error("Erro ao buscar dados do dashboard:", error);
@@ -265,6 +289,32 @@ function Dashboard() {
         initial="hidden"
         animate="show"
       >
+                {alertasOrcamento.length > 0 && (
+          <MotionBox variants={itemVariants} mb={8}>
+            <GlassCard gradient="linear(to-br, #f7971e, #ffd200)">
+              <VStack align="stretch" spacing={3}>
+                <HStack justify="space-between">
+                  <Heading size="md" color="white">🚨 Alertas de Orçamento</Heading>
+                  <Button as={RouterLink} to="/orcamentos" size="sm" variant="ghost" color="whiteAlpha.800" _hover={{ bg: 'whiteAlpha.200' }}>
+                    Ver orçamentos →
+                  </Button>
+                </HStack>
+                {alertasOrcamento.map((a) => {
+                  const cfg = categoriaDe(a.categoria);
+                  const estourou = a.pct >= 100;
+                  return (
+                    <Flex key={a.categoria} justify="space-between" align="center" p={3} bg="rgba(255,255,255,0.05)" borderRadius="xl" flexWrap="wrap" gap={2}>
+                      <Text color="white" fontWeight="semibold">{cfg.icon} {cfg.label}</Text>
+                      <Text color={estourou ? "red.300" : "yellow.300"} fontWeight="bold" fontSize="sm">
+                        {estourou ? "Estourou" : "Perto do limite"} · {formatCurrency(a.gasto)} / {formatCurrency(a.limite)} ({a.pct.toFixed(0)}%)
+                      </Text>
+                    </Flex>
+                  );
+                })}
+              </VStack>
+            </GlassCard>
+          </MotionBox>
+        )}
         <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={6} mb={8}>
           <MotionBox variants={itemVariants}>
             <GlassCard gradient="linear(to-br, #11998e, #38ef7d)">

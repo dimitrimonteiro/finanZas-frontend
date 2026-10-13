@@ -43,6 +43,7 @@ import CadastroPage from './pages/Cadastro';
 import ProtectedRoutes from './ProtectedRoutes';
 import Metas from './pages/Metas';
 import Recorrentes from './pages/Recorrentes';
+import Orcamentos from './pages/Orcamentos';
 
 import { AuthProvider, useAuth } from './auth/AuthContext';
 
@@ -56,6 +57,7 @@ const menuItems = [
   { name: 'Metas', path: '/metas', icon: '🎯', gradient: 'linear(to-r, #fc4a1a, #f7b733)' },
   { name: 'Relatórios', path: '/relatorios', icon: '📈', gradient: 'linear(to-r, #4facfe, #00f2fe)' },
   { name: 'Recorrências', path: '/recorrentes', icon: '🔁', gradient: 'linear(to-r, #a770ef, #cf8bf3)' },
+  { name: 'Orçamentos', path: '/orcamentos', icon: '🧮', gradient: 'linear(to-r, #f7971e, #ffd200)' },
   
 ];
 
@@ -362,6 +364,7 @@ function App() {
                 <Route path="/saidas" element={<Saidas />} />
                 <Route path="/metas" element={<Metas />} />
                  <Route path="/recorrentes" element={<Recorrentes />} />
+                 <Route path="/orcamentos" element={<Orcamentos />} />
                 <Route path="/relatorios" element={<Relatorios />} />
                 <Route path="/configuracoes" element={<Configuracoes />} />
               </Route>

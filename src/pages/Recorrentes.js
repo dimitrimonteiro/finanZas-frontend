@@ -30,6 +30,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
 import { useAuth } from "../auth/AuthContext";
+import { categoriasSaida } from "../utils/categoriasSaida";
 
 const MotionBox = motion(Box);
 const BASE_URL = "http://localhost:8080/api/recorrentes";
@@ -70,7 +71,8 @@ const emptyForm = {
   descricao: "",
   valor: "",
   tipoTransacao: "saida",
-  tipoSaida: "fixa",
+    tipoSaida: "fixa",
+  categoriaSaida: "outros",
   salario: false,
   diaVencimento: 5,
   ativa: true,
@@ -148,7 +150,7 @@ function Recorrentes() {
   };
 
   const iniciarEdicao = (r) => {
-    setForm({ ...r, valor: Number(r.valor) });
+    setForm({ ...r, valor: Number(r.valor), categoriaSaida: r.categoriaSaida || "outros" });
     setParaEditar(r);
     setMostrarFormulario(true);
   };
@@ -285,7 +287,28 @@ function Recorrentes() {
                   </Select>
                 </FormControl>
 
-                {form.tipoTransacao === "saida" ? (
+                                {form.tipoTransacao === "saida" && (
+                  <FormControl>
+                    <FormLabel color="whiteAlpha.900" fontSize="sm" fontWeight="semibold">🗂️ Categoria de Gasto</FormLabel>
+                    <Select
+                      name="categoriaSaida"
+                      value={form.categoriaSaida}
+                      onChange={handleChange}
+                      color="white"
+                      bg="rgba(255, 255, 255, 0.1)"
+                      border="1px solid"
+                      borderColor="whiteAlpha.300"
+                      size="lg"
+                      borderRadius="xl"
+                    >
+                      {Object.entries(categoriasSaida).map(([key, cfg]) => (
+                        <option key={key} value={key} style={{ backgroundColor: "#191919" }}>
+                          {cfg.icon} {cfg.label}
+                        </option>
+                      ))}
+                    </Select>
+                  </FormControl>
+                )}
                   <FormControl>
                     <FormLabel color="whiteAlpha.900" fontSize="sm" fontWeight="semibold">🏷️ Categoria da Saída</FormLabel>
                     <Select

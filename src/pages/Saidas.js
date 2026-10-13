@@ -36,6 +36,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { ptBR } from "date-fns/locale";
 import MonthNavigator from "../components/MonthNavigator";
+import { categoriasSaida, categoriaDe } from "../utils/categoriasSaida";
 
 const MotionBox = motion(Box);
 
@@ -87,6 +88,7 @@ function Saidas() {
     valor: "",
     data: "",
     tipo: "variável",
+    categoria: "outros",
   });
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [saidaParaExcluir, setSaidaParaExcluir] = useState(null);
@@ -178,7 +180,7 @@ useEffect(() => {
         });
       }
 
-      setNovaSaida({ descricao: "", valor: "", data: "", tipo: "variável" });
+      setNovaSaida({ descricao: "", valor: "", data: "", tipo: "variável", categoria: "outros" });
       setMostrarFormulario(false);
       setSaidaParaEditar(null);
       fetchSaidas();
@@ -197,6 +199,7 @@ useEffect(() => {
     setNovaSaida({
       ...saida,
       valor: Number(saida.valor),
+      categoria: saida.categoria || "outros",
     });
     setSaidaParaEditar(saida);
     setMostrarFormulario(true);
@@ -485,7 +488,32 @@ useEffect(() => {
                     icon={<Text>▼</Text>}
                   >
                     <option value="fixa" style={{backgroundColor: '#191919'}}>📌 Fixa (Aluguel, Assinatura, etc)</option>
-                    <option value="variável" style={{backgroundColor: '#191919'}}>🔄 Variável (Mercado, Lazer, etc)</option>
+                                       <option value="variável" style={{backgroundColor: '#191919'}}>🔄 Variável (Mercado, Lazer, etc)</option>
+                  </Select>
+                </FormControl>
+
+                <FormControl>
+                  <FormLabel color="whiteAlpha.900" fontSize="sm" fontWeight="semibold">
+                    🗂️ Categoria
+                  </FormLabel>
+                  <Select
+                    name="categoria"
+                    value={novaSaida.categoria}
+                    onChange={handleChange}
+                    color="white"
+                    bg="rgba(255, 255, 255, 0.1)"
+                    border="1px solid"
+                    borderColor="whiteAlpha.300"
+                    _hover={{ borderColor: 'whiteAlpha.400' }}
+                    _focus={{ borderColor: 'red.400', boxShadow: '0 0 0 1px #ff6a00' }}
+                    size="lg"
+                    borderRadius="xl"
+                  >
+                    {Object.entries(categoriasSaida).map(([key, cfg]) => (
+                      <option key={key} value={key} style={{ backgroundColor: '#191919' }}>
+                        {cfg.icon} {cfg.label}
+                      </option>
+                    ))}
                   </Select>
                 </FormControl>
 
@@ -572,6 +600,16 @@ useEffect(() => {
                           <Text fontSize="sm" color="whiteAlpha.600">
                             📅 {formatDate(saida.data)}
                           </Text>
+                      <Badge
+                      bgGradient={categoriaDe(saida.categoria).gradient}
+                      color="white"
+                      px={2}
+                      py={1}
+                      borderRadius="md"
+                      fontSize="xs"
+                    >
+                      {categoriaDe(saida.categoria).icon} {categoriaDe(saida.categoria).label}
+                    </Badge>
                           <Badge
                             bgGradient={saida.tipo === "fixa" ? "linear(to-r, #667eea, #764ba2)" : "linear(to-r, #fc4a1a, #f7b733)"}
                             color="white"
