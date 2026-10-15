@@ -44,6 +44,7 @@ import ProtectedRoutes from './ProtectedRoutes';
 import Metas from './pages/Metas';
 import Recorrentes from './pages/Recorrentes';
 import Orcamentos from './pages/Orcamentos';
+import NotificationBell from './components/NotificationBell';
 
 import { AuthProvider, useAuth } from './auth/AuthContext';
 
@@ -166,6 +167,8 @@ function Navigation() {
               </MotionBox>
             ))}
             
+                       <NotificationBell />
+
             <Menu>
               <MenuButton
                 as={Button}
@@ -174,16 +177,11 @@ function Navigation() {
                 _hover={{ bg: 'whiteAlpha.200' }}
                 borderRadius="xl"
               >
-                <HStack spacing={2}>
-                  <Avatar
-                    size="sm"
-                    name={currentUser?.email}
-                    bg="linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
-                  />
-                  <Text display={{ base: 'none', xl: 'block' }} fontSize="sm">
-                    {currentUser?.email?.split('@')[0]}
-                  </Text>
-                </HStack>
+                <Avatar
+                  size="sm"
+                  name={currentUser?.email}
+                  bg="linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+                />
               </MenuButton>
               <MenuList bg="#2D2D2D" borderColor="whiteAlpha.200">
                <MenuItem 
@@ -220,6 +218,7 @@ function Navigation() {
               >
                 {currentPath?.icon} {currentPath?.name}
               </Badge>
+              <NotificationBell />
               <IconButton
                 aria-label="Abrir menu"
                 icon={<HamburgerIcon />}

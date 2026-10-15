@@ -33,6 +33,7 @@ import { Link as RouterLink } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import axios from "axios";
 import { useAuth } from '../auth/AuthContext';
+import { parseLocalDate, formatDateBR } from '../utils/dates';
 import { format } from 'date-fns';
 import { categoriaDe } from '../utils/categoriasSaida';
 
@@ -91,14 +92,14 @@ const processarDadosMensais = (allEntradas, allSaidas) => {
   }
 
   allEntradas.forEach(e => {
-    const mesChave = format(new Date(e.data), 'yyyy-MM');
+    const mesChave = format(parseLocalDate(e.data), 'yyyy-MM');
     if (dadosAgregados[mesChave]) {
       dadosAgregados[mesChave].entrada += Number(e.valor);
     }
   });
 
   allSaidas.forEach(s => {
-    const mesChave = format(new Date(s.data), 'yyyy-MM');
+    const mesChave = format(parseLocalDate(s.data), 'yyyy-MM');
     if (dadosAgregados[mesChave]) {
       dadosAgregados[mesChave].saida += Number(s.valor);
     }
@@ -159,12 +160,12 @@ function Dashboard() {
       const currentYear = currentDate.getFullYear();
       
       const entradasMesAtual = allEntradas.filter(e => {
-        const dataEntrada = new Date(e.data);
+        const dataEntrada = parseLocalDate(e.data);
         return dataEntrada.getMonth() === currentMonth && dataEntrada.getFullYear() === currentYear;
       });
       
       const saidasMesAtual = allSaidas.filter(s => {
-        const dataSaida = new Date(s.data);
+        const dataSaida = parseLocalDate(s.data);
         return dataSaida.getMonth() === currentMonth && dataSaida.getFullYear() === currentYear;
       });
       
@@ -182,14 +183,14 @@ function Dashboard() {
       
       const totalEntradasMesAnterior = allEntradas
         .filter(e => {
-          const dataEntrada = new Date(e.data);
+          const dataEntrada = parseLocalDate(e.data);
           return dataEntrada.getMonth() === mesAnterior && dataEntrada.getFullYear() === anoMesAnterior;
         })
         .reduce((acc, e) => acc + Number(e.valor), 0);
         
       const totalSaidasMesAnterior = allSaidas
         .filter(s => {
-          const dataSaida = new Date(s.data);
+          const dataSaida = parseLocalDate(s.data);
           return dataSaida.getMonth() === mesAnterior && dataSaida.getFullYear() === anoMesAnterior;
         })
         .reduce((acc, s) => acc + Number(s.valor), 0);
@@ -202,7 +203,6 @@ function Dashboard() {
       setEntradas(allEntradas);
             setSaidas(allSaidas);
 
-      // Alertas de orçamento (se falhar, não derruba o dashboard)
       try {
         const orcamentosResponse = await axios.get(`https://finanzas-backend-rmik.onrender.com/api/orcamentos?userId=${userId}`);
         const gastoPorCategoria = {};
@@ -628,7 +628,7 @@ function Dashboard() {
 
               <VStack spacing={3} align="stretch">
                 {[...entradas, ...saidas]
-                  .sort((a, b) => new Date(b.data) - new Date(a.data))
+                  .sort((a, b) => parseLocalDate(b.data) - parseLocalDate(a.data))
                   .slice(0, 5)
                   .map((item, index) => {
                     const isEntrada = entradas.includes(item);
@@ -666,7 +666,7 @@ function Dashboard() {
                                 {item.descricao || 'Sem descrição'}
                               </Text>
                               <Text fontSize="xs" color="whiteAlpha.600">
-                                {new Date(item.data).toLocaleDateString('pt-BR')}
+                                {formatDateBR(item.data)}
                               </Text>
                             </VStack>
                           </HStack>

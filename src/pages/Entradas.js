@@ -38,6 +38,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import MonthNavigator from "../components/MonthNavigator";
 import { ptBR } from "date-fns/locale";
+import { parseLocalDate, toISODateLocal } from "../utils/dates";
 
 const MotionBox = motion(Box);
 
@@ -115,7 +116,7 @@ const [novaEntrada, setNovaEntrada] = useState({
       const response = await axios.get(`http://localhost:8080/api/entradas?userId=${userId}`);
       
   const entradasDoMes = response.data.filter(entrada => {
-        const dataEntrada = new Date(entrada.data);
+        const dataEntrada = parseLocalDate(entrada.data);
         return dataEntrada.getMonth() === selectedMonth && dataEntrada.getFullYear() === selectedYear;
       });
       setEntradas(entradasDoMes);
@@ -429,11 +430,11 @@ const totalSalarios = entradas.filter(e => e.categoria === "salario").reduce((ac
                     📅 Data
                   </FormLabel>
                   <DatePicker
-                    selected={novaEntrada.data ? new Date(novaEntrada.data) : null}
+                    selected={novaEntrada.data ? parseLocalDate(novaEntrada.data) : null}
                     onChange={(date) =>
                       setNovaEntrada({
                         ...novaEntrada,
-                        data: date ? date.toISOString().split("T")[0] : "",
+                        data: date ? toISODateLocal(date) : "",
                       })
                     }
                     dateFormat="dd/MM/yyyy"
@@ -529,7 +530,7 @@ const totalSalarios = entradas.filter(e => e.categoria === "salario").reduce((ac
               </VStack>
             </GlassCard>
           ) : (
-            entradas.sort((a, b) => new Date(b.data) - new Date(a.data)).map((entrada, index) => (
+            entradas.sort((a, b) => parseLocalDate(b.data) - parseLocalDate(a.data)).map((entrada, index) => (
               <MotionBox
                 key={entrada.id}
                 variants={itemVariants}

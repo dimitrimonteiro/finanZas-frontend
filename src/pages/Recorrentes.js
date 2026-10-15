@@ -103,7 +103,6 @@ function Recorrentes() {
 
   useEffect(() => {
     fetchRecorrentes();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser]);
 
   const handleChange = (e) => {

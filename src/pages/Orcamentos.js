@@ -93,14 +93,11 @@ function Orcamentos() {
 
   useEffect(() => {
     fetchDados();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser]);
 
-  // Gasto por categoria no mês selecionado.
-  // A data é lida do texto "yyyy-MM-dd" para evitar problema de fuso horário.
   const gastos = {};
   saidas.forEach((s) => {
-    if (!s.data) return;
+    if (!s.data || s.metaId) return;
     const [ano, mes] = s.data.split("-").map(Number);
     if (mes - 1 === selectedMonth && ano === selectedYear) {
       const cat = categoriasSaida[s.categoria] ? s.categoria : "outros";

@@ -9,4 +9,7 @@ export const categoriasSaida = {
   outros: { icon: "💸", label: "Outros", gradient: "linear(to-r, #a8edea, #fed6e3)" },
 };
 
-export const categoriaDe = (key) => categoriasSaida[key] || categoriasSaida.outros;
+const categoriaMetas = { icon: "🎯", label: "Metas", gradient: "linear(to-r, #fc4a1a, #f7b733)" };
+
+export const categoriaDe = (key) =>
+  key === "metas" ? categoriaMetas : categoriasSaida[key] || categoriasSaida.outros;

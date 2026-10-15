@@ -38,6 +38,7 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import 'jspdf-autotable';
 import { format } from "date-fns";
+import { parseLocalDate, hojeISO } from "../utils/dates";
 
 const MotionBox = motion(Box);
 
@@ -99,14 +100,14 @@ const processarDadosMensais = (allEntradas, allSaidas) => {
   }
 
   allEntradas.forEach(e => {
-    const mesChave = format(new Date(e.data), 'yyyy-MM');
+    const mesChave = format(parseLocalDate(e.data), 'yyyy-MM');
     if (dadosAgregados[mesChave]) {
       dadosAgregados[mesChave].entrada += Number(e.valor);
     }
   });
 
   allSaidas.forEach(s => {
-    const mesChave = format(new Date(s.data), 'yyyy-MM');
+    const mesChave = format(parseLocalDate(s.data), 'yyyy-MM');
     if (dadosAgregados[mesChave]) {
       dadosAgregados[mesChave].saida += Number(s.valor);
     }
@@ -146,12 +147,12 @@ function Relatorios() {
       const currentYear = currentDate.getFullYear();
       
       const entradasMesAtual = fetchedEntradas.filter(e => {
-        const dataEntrada = new Date(e.data);
+        const dataEntrada = parseLocalDate(e.data);
         return dataEntrada.getMonth() === currentMonth && dataEntrada.getFullYear() === currentYear;
       });
       
       const saidasMesAtual = fetchedSaidas.filter(s => {
-        const dataSaida = new Date(s.data);
+        const dataSaida = parseLocalDate(s.data);
         return dataSaida.getMonth() === currentMonth && dataSaida.getFullYear() === currentYear;
       });
 
@@ -161,14 +162,14 @@ function Relatorios() {
       
       const totalEntradasMesAnterior = fetchedEntradas
         .filter(e => {
-          const dataEntrada = new Date(e.data);
+          const dataEntrada = parseLocalDate(e.data);
           return dataEntrada.getMonth() === mesAnterior && dataEntrada.getFullYear() === anoMesAnterior;
         })
         .reduce((acc, e) => acc + Number(e.valor), 0);
         
       const totalSaidasMesAnterior = fetchedSaidas
         .filter(s => {
-          const dataSaida = new Date(s.data);
+          const dataSaida = parseLocalDate(s.data);
           return dataSaida.getMonth() === mesAnterior && dataSaida.getFullYear() === anoMesAnterior;
         })
         .reduce((acc, s) => acc + Number(s.valor), 0);
@@ -200,19 +201,20 @@ function Relatorios() {
   const currentYear = currentDate.getFullYear();
   
   const entradasMesAtual = allEntradas.filter(e => {
-    const dataEntrada = new Date(e.data);
+    const dataEntrada = parseLocalDate(e.data);
     return dataEntrada.getMonth() === currentMonth && dataEntrada.getFullYear() === currentYear;
   });
   
   const saidasMesAtual = allSaidas.filter(s => {
-    const dataSaida = new Date(s.data);
+    const dataSaida = parseLocalDate(s.data);
     return dataSaida.getMonth() === currentMonth && dataSaida.getFullYear() === currentYear;
   });
 
   const totalEntradas = entradasMesAtual.reduce((acc, e) => acc + Number(e.valor), 0);
   const totalSaidas = saidasMesAtual.reduce((acc, s) => acc + Number(s.valor), 0);
   const saldo = totalEntradas - totalSaidas;
-  const taxaEconomia = totalEntradas > 0 ? ((saldo / totalEntradas) * 100) : 0;
+  const totalAportes = saidasMesAtual.filter(s => s.metaId).reduce((acc, s) => acc + Number(s.valor), 0);
+  const taxaEconomia = totalEntradas > 0 ? (((saldo + totalAportes) / totalEntradas) * 100) : 0;
 
   const percentualEntradas = dadosMesAnterior.entradas > 0 ? (((totalEntradas - dadosMesAnterior.entradas) / dadosMesAnterior.entradas) * 100) : 0;
   const percentualSaidas = dadosMesAnterior.saidas > 0 ? (((totalSaidas - dadosMesAnterior.saidas) / dadosMesAnterior.saidas) * 100) : 0;
@@ -331,7 +333,7 @@ function Relatorios() {
             }
         });
 
-        pdf.save(`relatorio_finanzas_${new Date().toISOString().split('T')[0]}.pdf`);
+        pdf.save(`relatorio_finanzas_${hojeISO()}.pdf`);
         setIsGenerating(false);
         toast({
             title: "📄 Relatório gerado!",

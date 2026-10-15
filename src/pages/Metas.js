@@ -37,6 +37,8 @@ import { useAuth } from "../auth/AuthContext";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { ptBR } from "date-fns/locale";
+import AportesMeta from "../components/AportesMeta";
+import { parseLocalDate, toISODateLocal, diasAte } from "../utils/dates";
 
 const MotionBox = motion(Box);
 
@@ -419,7 +421,7 @@ function Metas() {
 
                   <FormControl>
                     <FormLabel color="whiteAlpha.900" fontSize="sm" fontWeight="semibold">
-                      💵 Valor Já Economizado
+                      💵 Valor inicial já economizado
                     </FormLabel>
                     <InputGroup size="lg">
                       <InputLeftElement pointerEvents="none" color="whiteAlpha.600">
@@ -476,7 +478,7 @@ function Metas() {
                     📅 Data Limite
                   </FormLabel>
                   <DatePicker
-                    selected={novaMeta.dataLimite ? new Date(novaMeta.dataLimite.replace(/-/g, '/')) : null}
+                    selected={novaMeta.dataLimite ? parseLocalDate(novaMeta.dataLimite) : null}
                     onChange={(date) =>
                       setNovaMeta({
                         ...novaMeta,
@@ -677,6 +679,7 @@ function Metas() {
                           </Badge>
                         )}
                       </Flex>
+                      <AportesMeta meta={meta} userId={currentUser.uid} onChange={fetchMetas} />
                     </VStack>
                   </GlassCard>
                 </MotionBox>

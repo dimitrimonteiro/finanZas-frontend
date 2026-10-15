@@ -36,6 +36,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { ptBR } from "date-fns/locale";
 import MonthNavigator from "../components/MonthNavigator";
+import { parseLocalDate, toISODateLocal } from "../utils/dates";
 import { categoriasSaida, categoriaDe } from "../utils/categoriasSaida";
 
 const MotionBox = motion(Box);
@@ -106,7 +107,7 @@ function Saidas() {
       const response = await axios.get(`http://localhost:8080/api/saidas?userId=${userId}`);
 
 const saidasDoMes = response.data.filter(saida => {
-        const dataSaida = new Date(saida.data);
+        const dataSaida = parseLocalDate(saida.data);
         return dataSaida.getMonth() === selectedMonth && dataSaida.getFullYear() === selectedYear;
       });
       setSaidas(saidasDoMes);
@@ -249,8 +250,9 @@ useEffect(() => {
 
   const totalSaidas = saidas.reduce((acc, s) => acc + Number(s.valor), 0);
   const saidasFixas = saidas.filter(s => s.tipo === "fixa").reduce((acc, s) => acc + Number(s.valor), 0);
-  const saidasVariaveis = totalSaidas - saidasFixas;
-  const percentualFixas = totalSaidas > 0 ? (saidasFixas / totalSaidas) * 100 : 0;
+  const saidasVariaveis = saidas.filter(s => s.tipo === "variável").reduce((acc, s) => acc + Number(s.valor), 0);
+  const totalGastos = saidasFixas + saidasVariaveis;
+  const percentualFixas = totalGastos > 0 ? (saidasFixas / totalGastos) * 100 : 0;
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -442,11 +444,11 @@ useEffect(() => {
                     📅 Data
                   </FormLabel>
                   <DatePicker
-                    selected={novaSaida.data ? new Date(novaSaida.data) : null}
+                    selected={novaSaida.data ? parseLocalDate(novaSaida.data) : null}
                     onChange={(date) =>
                       setNovaSaida({
                         ...novaSaida,
-                        data: date ? date.toISOString().split("T")[0] : "",
+                        data: date ? toISODateLocal(date) : "",
                       })
                     }
                     dateFormat="dd/MM/yyyy"
@@ -565,7 +567,7 @@ useEffect(() => {
               </VStack>
             </GlassCard>
           ) : (
-            saidas.sort((a, b) => new Date(b.data) - new Date(a.data)).map((saida, index) => (
+            saidas.sort((a, b) => parseLocalDate(b.data) - parseLocalDate(a.data)).map((saida, index) => (
               <MotionBox
                 key={saida.id}
                 variants={itemVariants}
@@ -590,7 +592,7 @@ useEffect(() => {
                         fontSize="2xl"
                         flexShrink={0}
                       >
-                        {saida.tipo === "fixa" ? "📌" : "🔄"}
+                        {saida.tipo === "fixa" ? "📌" : saida.tipo === "aporte" ? "🎯" : "🔄"}
                       </Flex>
                       <VStack align="start" spacing={1}>
                         <Text color="white" fontWeight="bold" fontSize="lg">
@@ -618,7 +620,7 @@ useEffect(() => {
                             borderRadius="md"
                             fontSize="xs"
                           >
-                            {saida.tipo === "fixa" ? "📌 Fixa" : "🔄 Variável"}
+                            {saida.tipo === "fixa" ? "📌 Fixa" : saida.tipo === "aporte" ? "🎯 Aporte" : "🔄 Variável"}
                           </Badge>
                           {saida.recorrenteId && (
                             <Badge colorScheme="purple" px={2} py={1} borderRadius="md" fontSize="xs">
@@ -643,6 +645,7 @@ useEffect(() => {
                         color="white"
                         _hover={{ transform: "scale(1.05)" }}
                         onClick={() => iniciarEdicao(saida)}
+                        isDisabled={Boolean(saida.metaId)}
                         borderRadius="lg"
                       >
                         ✏️
@@ -653,6 +656,7 @@ useEffect(() => {
                         color="white"
                         _hover={{ transform: "scale(1.05)" }}
                         onClick={() => confirmarExclusao(saida.id)}
+                        isDisabled={Boolean(saida.metaId)}
                         borderRadius="lg"
                       >
                         🗑️

@@ -28,6 +28,7 @@ import { ViewIcon, ViewOffIcon, CopyIcon, CheckIcon } from '@chakra-ui/icons';
 import { motion } from "framer-motion";
 import { useAuth } from '../auth/AuthContext';
 import axios from "axios";
+import { hojeISO } from "../utils/dates";
 
 const MotionBox = motion(Box);
 
@@ -102,7 +103,7 @@ function Configuracoes() {
       )}`;
       const link = document.createElement('a');
       link.href = jsonString;
-      link.download = `finanzas_export_${new Date().toISOString().split('T')[0]}.json`;
+      link.download = `finanzas_export_${hojeISO()}.json`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
