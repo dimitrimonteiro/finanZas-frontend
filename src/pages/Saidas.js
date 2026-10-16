@@ -36,8 +36,9 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { ptBR } from "date-fns/locale";
 import MonthNavigator from "../components/MonthNavigator";
-import { parseLocalDate, toISODateLocal } from "../utils/dates";
+import { parseLocalDate, toISODateLocal, hojeISO } from "../utils/dates";
 import { categoriasSaida, categoriaDe } from "../utils/categoriasSaida";
+import { Sk, ListSkeleton } from "../components/Skeletons";
 
 const MotionBox = motion(Box);
 
@@ -81,13 +82,14 @@ const GlassCard = ({ children, gradient, ...props }) => (
 );
 
 function Saidas() {
+  const [carregando, setCarregando] = useState(true);
   const [saidas, setSaidas] = useState([]);
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [novaSaida, setNovaSaida] = useState({
     descricao: "",
     valor: "",
-    data: "",
+    data: hojeISO(),
     tipo: "variável",
     categoria: "outros",
   });
@@ -111,8 +113,10 @@ const saidasDoMes = response.data.filter(saida => {
         return dataSaida.getMonth() === selectedMonth && dataSaida.getFullYear() === selectedYear;
       });
       setSaidas(saidasDoMes);
+      setCarregando(false);
     } catch (error) {
       console.error("Erro ao buscar saídas:", error);
+      setCarregando(false);
       toast({
         title: "❌ Erro ao carregar",
         description: "Não foi possível conectar ao servidor.",
@@ -156,6 +160,17 @@ useEffect(() => {
       return;
     }
 
+    if (!novaSaida.data) {
+      toast({
+        title: "⚠️ Data obrigatória",
+        description: "Selecione a data da saída.",
+        status: "warning",
+        duration: 3000,
+        position: "top-right",
+      });
+      return;
+    }
+
     const payload = {
       ...novaSaida,
       userId,
@@ -181,7 +196,7 @@ useEffect(() => {
         });
       }
 
-      setNovaSaida({ descricao: "", valor: "", data: "", tipo: "variável", categoria: "outros" });
+      setNovaSaida({ descricao: "", valor: "", data: hojeISO(), tipo: "variável", categoria: "outros" });
       setMostrarFormulario(false);
       setSaidaParaEditar(null);
       fetchSaidas();
@@ -293,7 +308,7 @@ useEffect(() => {
           <Button
             onClick={() => {
               setMostrarFormulario(!mostrarFormulario);
-              setNovaSaida({ descricao: "", valor: "", data: "", tipo: "variável" });
+              setNovaSaida({ descricao: "", valor: "", data: hojeISO(), tipo: "variável" });
               setSaidaParaEditar(null);
             }}
             size="lg"
@@ -323,7 +338,7 @@ useEffect(() => {
           <GlassCard gradient="linear(to-br, #ee0979, #ff6a00)">
             <Stat>
               <StatLabel color="whiteAlpha.800" fontSize="sm">Total de Saídas</StatLabel>
-              <StatNumber fontSize="3xl" color="white">{formatCurrency(totalSaidas)}</StatNumber>
+              <Sk isLoaded={!carregando}><StatNumber fontSize="3xl" color="white">{formatCurrency(totalSaidas)}</StatNumber></Sk>
               <StatHelpText color="red.300" mb={0}>
                 {saidas.length} {saidas.length === 1 ? 'registro' : 'registros'} este mês
               </StatHelpText>
@@ -333,7 +348,7 @@ useEffect(() => {
           <GlassCard gradient="linear(to-br, #667eea, #764ba2)">
             <Stat>
               <StatLabel color="whiteAlpha.800" fontSize="sm">📌 Despesas Fixas</StatLabel>
-              <StatNumber fontSize="3xl" color="white">{formatCurrency(saidasFixas)}</StatNumber>
+              <Sk isLoaded={!carregando}><StatNumber fontSize="3xl" color="white">{formatCurrency(saidasFixas)}</StatNumber></Sk>
               <StatHelpText color="purple.300" mb={0}>
                 {saidas.filter(s => s.tipo === "fixa").length} despesa(s) fixas
               </StatHelpText>
@@ -343,7 +358,7 @@ useEffect(() => {
           <GlassCard gradient="linear(to-br, #fc4a1a, #f7b733)">
             <Stat>
               <StatLabel color="whiteAlpha.800" fontSize="sm">🔄 Despesas Variáveis</StatLabel>
-              <StatNumber fontSize="3xl" color="white">{formatCurrency(saidasVariaveis)}</StatNumber>
+              <Sk isLoaded={!carregando}><StatNumber fontSize="3xl" color="white">{formatCurrency(saidasVariaveis)}</StatNumber></Sk>
               <StatHelpText color="orange.300" mb={0}>
                 {saidas.filter(s => s.tipo === "variável").length} despesa(s) variáveis
               </StatHelpText>
@@ -441,7 +456,7 @@ useEffect(() => {
 
                 <FormControl>
                   <FormLabel color="whiteAlpha.900" fontSize="sm" fontWeight="semibold">
-                    📅 Data
+                    📅 Data *
                   </FormLabel>
                   <DatePicker
                     selected={novaSaida.data ? parseLocalDate(novaSaida.data) : null}
@@ -547,7 +562,9 @@ useEffect(() => {
         animate="show"
       >
         <VStack spacing={4} align="stretch">
-          {saidas.length === 0 ? (
+          {carregando ? (
+            <ListSkeleton count={4} />
+          ) : saidas.length === 0 ? (
             <GlassCard>
               <VStack py={12} spacing={4}>
                 <Text fontSize="6xl">📭</Text>

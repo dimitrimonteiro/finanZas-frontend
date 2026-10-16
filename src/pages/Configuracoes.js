@@ -1,724 +1,423 @@
-import React, { useState } from "react";
-import {
-  Box,
-  Button,
-  FormControl,
-  FormLabel,
-  Input,
-  VStack,
-  Text,
-  useToast,
-  Heading,
-  Switch,
-  useColorMode,
-  HStack,
-  Link,
-  useClipboard, 
-  InputGroup,
-  InputRightElement,
-  Avatar,
-  Flex,
-  SimpleGrid,
-  Badge,
-  IconButton,
-  Divider,
-  Spinner,
-} from "@chakra-ui/react";
-import { ViewIcon, ViewOffIcon, CopyIcon, CheckIcon } from '@chakra-ui/icons';
-import { motion } from "framer-motion";
-import { useAuth } from '../auth/AuthContext';
-import axios from "axios";
-import { hojeISO } from "../utils/dates";
+const { Client, LocalAuth } = require("whatsapp-web.js");
+const qrcode = require("qrcode-terminal");
+const axios = require("axios");
 
-const MotionBox = motion(Box);
+const API_BASE_URL =
+    process.env.API_BASE_URL || "https://finanzas-backend-rmik.onrender.com/api";
+const BOT_API_KEY = process.env.BOT_API_KEY;
+const SITE_URL = process.env.SITE_URL || "https://finanzas.dev.br";
 
-const GlassCard = ({ children, gradient, ...props }) => (
-  <MotionBox
-    bg="rgba(255, 255, 255, 0.05)"
-    backdropFilter="blur(20px)"
-    borderRadius="2xl"
-    border="1px solid"
-    borderColor="whiteAlpha.200"
-    p={6}
-    boxShadow="0 8px 32px 0 rgba(0, 0, 0, 0.37)"
-    position="relative"
-    overflow="hidden"
-    whileHover={{ y: -5 }}
-    transition={{ duration: 0.3 }}
-    {...props}
-  >
-    {gradient && (
-      <Box
-        position="absolute"
-        top={0}
-        left={0}
-        right={0}
-        bottom={0}
-        bgGradient={gradient}
-        opacity={0.1}
-        pointerEvents="none"
-      />
-    )}
-    {children}
-  </MotionBox>
-);
-
-function Configuracoes() {
-  const [nome, setNome] = useState("");
-  const [email, setEmail] = useState("");
-  const [senha, setSenha] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [isExporting, setIsExporting] = useState(false);
-  const toast = useToast();
-  const { colorMode, toggleColorMode } = useColorMode();
-  
-  const { currentUser } = useAuth();
-  
-  const whatsappId = currentUser ? currentUser.uid : "Faça login para ver seu ID";
-  
-  const { onCopy, hasCopied } = useClipboard(whatsappId);
-
-  const handleExportData = async () => {
-    if (!currentUser) return;
-
-    setIsExporting(true);
-    try {
-      const userId = currentUser.uid;
-      
-      const entradasResponse = await axios.get(`http://localhost:8080/api/entradas?userId=${userId}`);
-      const saidasResponse = await axios.get(`http://localhost:8080/api/saidas?userId=${userId}`);
-      
-      const dataToExport = {
-        metaData: {
-            app: "FinanZas TCC Export",
-            exportDate: new Date().toISOString(),
-            userId: userId,
-        },
-        entradas: entradasResponse.data,
-        saidas: saidasResponse.data,
-      };
-
-      const jsonString = `data:text/json;charset=utf-8,${encodeURIComponent(
-        JSON.stringify(dataToExport, null, 2)
-      )}`;
-      const link = document.createElement('a');
-      link.href = jsonString;
-      link.download = `finanzas_export_${hojeISO()}.json`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-
-      toast({
-        title: "📥 Exportação Concluída!",
-        description: "Seus dados foram baixados em formato JSON.",
-        status: "success",
-        duration: 4000,
-        isClosable: true,
-        position: "top-right",
-      });
-
-    } catch (error) {
-      console.error("Erro ao exportar dados:", error);
-      toast({
-        title: "❌ Erro na Exportação",
-        description: "Não foi possível buscar os dados do servidor. Verifique o backend.",
-        status: "error",
-        duration: 4000,
-        isClosable: true,
-        position: "top-right",
-      });
-    } finally {
-      setIsExporting(false);
-    }
-  };
-
-  const handleSalvar = () => {
-    toast({
-      title: "✅ Configurações salvas!",
-      description: "Suas informações foram atualizadas.",
-      status: "success",
-      duration: 3000,
-      isClosable: true,
-      position: "top-right",
-    });
-    setSenha("");
-  };
-
-  const handleToggleColorMode = () => {
-    toggleColorMode();
-    toast({
-      title: `🎨 Modo ${colorMode === 'light' ? 'Escuro' : 'Claro'} ativado`,
-      status: "info",
-      duration: 2000,
-      isClosable: true,
-      position: "top-right",
-    });
-  };
-
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: { staggerChildren: 0.1 }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0 }
-  };
-
-  return (
-    <Box w="100%" maxW="1200px" mx="auto">
-      <MotionBox
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        mb={8}
-      >
-        <VStack align="start" spacing={1}>
-          <Heading
-            fontSize={{ base: "3xl", md: "4xl" }}
-            fontWeight="black"
-            bgGradient="linear(to-r, #a8edea, #fed6e3)"
-            bgClip="text"
-          >
-            ⚙️ Configurações
-          </Heading>
-          <Text color="whiteAlpha.700" fontSize={{ base: "sm", md: "md" }}>
-            Personalize sua experiência no FinanZas
-          </Text>
-        </VStack>
-      </MotionBox>
-
-      <motion.div
-        variants={containerVariants}
-        initial="hidden"
-        animate="show"
-      >
-        {currentUser && (
-          <MotionBox variants={itemVariants} mb={6}>
-            <GlassCard gradient="linear(to-br, #667eea, #764ba2)">
-              <Flex
-                direction={{ base: "column", md: "row" }}
-                align="center"
-                gap={6}
-              >
-                <Avatar
-                  size="2xl"
-                  name={currentUser?.email}
-                  bg="linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
-                  border="4px solid"
-                  borderColor="whiteAlpha.300"
-                  boxShadow="0 8px 24px rgba(102, 126, 234, 0.4)"
-                />
-                <VStack align={{ base: "center", md: "start" }} spacing={2} flex={1}>
-                  <Heading size="lg" color="white">
-                    {currentUser?.displayName || currentUser?.email?.split('@')[0]}
-                  </Heading>
-                  <Text color="whiteAlpha.700" fontSize="md">
-                    {currentUser?.email}
-                  </Text>
-                  <HStack spacing={2} mt={2}>
-                    <Badge bgGradient="linear(to-r, #11998e, #38ef7d)" color="white" px={3} py={1} borderRadius="full">
-                      ✓ Conta Ativa
-                    </Badge>
-                  </HStack>
-                </VStack>
-              </Flex>
-            </GlassCard>
-          </MotionBox>
-        )}
-
-        {currentUser && (
-          <MotionBox variants={itemVariants} mb={6}>
-            <GlassCard gradient="linear(to-br, #25d366, #128c7e)">
-              <VStack align="stretch" spacing={4}>
-                <HStack justify="space-between">
-                  <HStack>
-                    <Text fontSize="3xl">💬</Text>
-                    <VStack align="start" spacing={0}>
-                      <Heading size="md" color="white">
-                        Integração WhatsApp Bot
-                      </Heading>
-                      <Text fontSize="sm" color="whiteAlpha.700">
-                        Gerencie suas finanças pelo WhatsApp
-                      </Text>
-                    </VStack>
-                  </HStack>
-                  <Badge colorScheme="green" fontSize="xs" px={3} py={1} borderRadius="full">
-                    Disponível
-                  </Badge>
-                </HStack>
-
-                <Divider borderColor="whiteAlpha.300" />
-
-                <Box p={4} bg="rgba(255, 255, 255, 0.1)" borderRadius="xl">
-                  <Text color="whiteAlpha.800" fontSize="sm" mb={3}>
-                    📱 Use este comando no WhatsApp:
-                  </Text>
-                  <Box
-                    p={3}
-                    bg="rgba(0, 0, 0, 0.3)"
-                    borderRadius="lg"
-                    fontFamily="mono"
-                    fontSize="sm"
-                    color="green.300"
-                  >
-                    CONECTAR {'{SEU_ID}'}
-                  </Box>
-                </Box>
-
-                <FormControl>
-                  <FormLabel color="whiteAlpha.900" fontSize="sm" fontWeight="semibold">
-                    🔑 Seu ID de Usuário (UID)
-                  </FormLabel>
-                  <InputGroup size="lg">
-                    <Input
-                      value={whatsappId}
-                      isReadOnly
-                      color="white"
-                      bg="rgba(255, 255, 255, 0.1)"
-                      border="1px solid"
-                      borderColor="whiteAlpha.300"
-                      borderRadius="xl"
-                      fontFamily="mono"
-                      fontSize="sm"
-                    />
-                    <InputRightElement>
-                      <IconButton
-                        aria-label="Copiar ID"
-                        icon={hasCopied ? <CheckIcon /> : <CopyIcon />}
-                        onClick={onCopy}
-                        colorScheme={hasCopied ? "green" : "whiteAlpha"}
-                        size="sm"
-                        variant="ghost"
-                      />
-                    </InputRightElement>
-                  </InputGroup>
-                </FormControl>
-
-                <Button
-                  as={Link}
-                  href="https://wa.me/5511960428846"
-                  target="_blank"
-                  size="lg"
-                  bg="white"
-                  color="#25d366"
-                  _hover={{ 
-                    transform: "translateY(-2px)",
-                    boxShadow: "xl"
-                  }}
-                  transition="all 0.3s"
-                  borderRadius="xl"
-                  leftIcon={<Text fontSize="xl">💬</Text>}
-                >
-                  Abrir WhatsApp
-                </Button>
-              </VStack>
-            </GlassCard>
-          </MotionBox>
-        )}
-
-        <MotionBox variants={itemVariants} mb={6}>
-          <GlassCard gradient="linear(to-br, #4facfe, #00f2fe)">
-            <VStack align="stretch" spacing={5}>
-              <HStack>
-                <Text fontSize="2xl">👤</Text>
-                <Heading size="md" color="white">
-                  Informações da Conta
-                </Heading>
-              </HStack>
-              <FormControl>
-                <FormLabel color="whiteAlpha.900" fontSize="sm" fontWeight="semibold">
-                  📝 Nome Completo
-                </FormLabel>
-                <Input
-                  value={nome}
-                  onChange={(e) => setNome(e.target.value)}
-                  placeholder="Digite seu nome"
-                  color="white"
-                  bg="rgba(255, 255, 255, 0.1)"
-                  border="1px solid"
-                  borderColor="whiteAlpha.300"
-                  _placeholder={{ color: 'whiteAlpha.500' }}
-                  _hover={{ borderColor: 'whiteAlpha.400' }}
-                  _focus={{ borderColor: 'blue.400', boxShadow: '0 0 0 1px #4facfe' }}
-                  size="lg"
-                  borderRadius="xl"
-                />
-              </FormControl>
-
-              <FormControl>
-                <FormLabel color="whiteAlpha.900" fontSize="sm" fontWeight="semibold">
-                  📧 Email
-                </FormLabel>
-                <Input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="seu@email.com"
-                  color="white"
-                  bg="rgba(255, 255, 255, 0.1)"
-                  border="1px solid"
-                  borderColor="whiteAlpha.300"
-                  _placeholder={{ color: 'whiteAlpha.500' }}
-                  _hover={{ borderColor: 'whiteAlpha.400' }}
-                  _focus={{ borderColor: 'blue.400', boxShadow: '0 0 0 1px #4facfe' }}
-                  size="lg"
-                  borderRadius="xl"
-                />
-              </FormControl>
-
-              <FormControl>
-                <FormLabel color="whiteAlpha.900" fontSize="sm" fontWeight="semibold">
-                  🔒 Nova Senha
-                </FormLabel>
-                <InputGroup size="lg">
-                  <Input
-                    type={showPassword ? 'text' : 'password'}
-                    value={senha}
-                    onChange={(e) => setSenha(e.target.value)}
-                    placeholder="Digite uma nova senha"
-                    color="white"
-                    bg="rgba(255, 255, 255, 0.1)"
-                    border="1px solid"
-                    borderColor="whiteAlpha.300"
-                    _placeholder={{ color: 'whiteAlpha.500' }}
-                    _hover={{ borderColor: 'whiteAlpha.400' }}
-                    _focus={{ borderColor: 'blue.400', boxShadow: '0 0 0 1px #4facfe' }}
-                    borderRadius="xl"
-                  />
-                  <InputRightElement>
-                    <IconButton
-                      aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
-                      icon={showPassword ? <ViewOffIcon /> : <ViewIcon />}
-                      onClick={() => setShowPassword(!showPassword)}
-                      variant="ghost"
-                      color="whiteAlpha.700"
-                      _hover={{ bg: 'whiteAlpha.200' }}
-                      size="sm"
-                    />
-                  </InputRightElement>
-                </InputGroup>
-              </FormControl>
-
-              <Button
-                onClick={handleSalvar}
-                size="lg"
-                bgGradient="linear(to-r, #4facfe, #00f2fe)"
-                color="white"
-                _hover={{ 
-                  bgGradient: "linear(to-r, #00f2fe, #4facfe)",
-                  transform: "translateY(-2px)",
-                  boxShadow: "0 8px 24px rgba(79, 172, 254, 0.4)"
-                }}
-                transition="all 0.3s"
-                borderRadius="xl"
-                fontWeight="bold"
-                leftIcon={<Text>💾</Text>}
-              >
-                Salvar Alterações
-              </Button>
-            </VStack>
-          </GlassCard>
-        </MotionBox>
-
-        <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6} mb={6}>
-          <MotionBox variants={itemVariants}>
-            <GlassCard gradient="linear(to-br, #667eea, #764ba2)">
-              <VStack align="stretch" spacing={4}>
-                <HStack>
-                  <Text fontSize="2xl">🎨</Text>
-                  <Heading size="md" color="white">
-                    Aparência
-                  </Heading>
-                </HStack>
-
-                <Flex
-                  p={4}
-                  bg="rgba(255, 255, 255, 0.1)"
-                  borderRadius="xl"
-                  justify="space-between"
-                  align="center"
-                >
-                  <VStack align="start" spacing={0}>
-                    <Text color="white" fontWeight="semibold">
-                      {colorMode === 'dark' ? '🌙' : '☀️'} Modo {colorMode === 'dark' ? 'Escuro' : 'Claro'}
-                    </Text>
-                    <Text fontSize="xs" color="whiteAlpha.600">
-                      Alterne entre temas
-                    </Text>
-                  </VStack>
-                  <Switch
-                    size="lg"
-                    colorScheme="purple"
-                    isChecked={colorMode === 'dark'}
-                    onChange={handleToggleColorMode}
-                  />
-                </Flex>
-
-                <Flex
-                  p={4}
-                  bg="rgba(255, 255, 255, 0.1)"
-                  borderRadius="xl"
-                  justify="space-between"
-                  align="center"
-                >
-                  <VStack align="start" spacing={0}>
-                    <Text color="white" fontWeight="semibold">
-                      ✨ Animações
-                    </Text>
-                    <Text fontSize="xs" color="whiteAlpha.600">
-                      Efeitos visuais
-                    </Text>
-                  </VStack>
-                  <Switch
-                    size="lg"
-                    colorScheme="purple"
-                    defaultChecked
-                  />
-                </Flex>
-              </VStack>
-            </GlassCard>
-          </MotionBox>
-
-          <MotionBox variants={itemVariants}>
-            <GlassCard gradient="linear(to-br, #11998e, #38ef7d)">
-              <VStack align="stretch" spacing={4}>
-                <HStack>
-                  <Text fontSize="2xl">🔔</Text>
-                  <Heading size="md" color="white">
-                    Notificações
-                  </Heading>
-                </HStack>
-
-                <Flex
-                  p={4}
-                  bg="rgba(255, 255, 255, 0.1)"
-                  borderRadius="xl"
-                  justify="space-between"
-                  align="center"
-                >
-                  <VStack align="start" spacing={0}>
-                    <Text color="white" fontWeight="semibold">
-                      📧 Email
-                    </Text>
-                    <Text fontSize="xs" color="whiteAlpha.600">
-                      Resumos financeiros
-                    </Text>
-                  </VStack>
-                  <Switch
-                    size="lg"
-                    colorScheme="green"
-                    defaultChecked
-                  />
-                </Flex>
-
-                <Flex
-                  p={4}
-                  bg="rgba(255, 255, 255, 0.1)"
-                  borderRadius="xl"
-                  justify="space-between"
-                  align="center"
-                >
-                  <VStack align="start" spacing={0}>
-                    <Text color="white" fontWeight="semibold">
-                      💬 WhatsApp
-                    </Text>
-                    <Text fontSize="xs" color="whiteAlpha.600">
-                      Alertas de metas
-                    </Text>
-                  </VStack>
-                  <Switch
-                    size="lg"
-                    colorScheme="green"
-                    defaultChecked
-                  />
-                </Flex>
-              </VStack>
-            </GlassCard>
-          </MotionBox>
-        </SimpleGrid>
-
-        <MotionBox variants={itemVariants} mb={6}>
-          <GlassCard gradient="linear(to-br, #fc4a1a, #f7b733)">
-            <VStack align="stretch" spacing={4}>
-              <HStack>
-                <Text fontSize="2xl">🔐</Text>
-                <Heading size="md" color="white">
-                  Segurança e Privacidade
-                </Heading>
-              </HStack>
-
-              <SimpleGrid columns={{ base: 1, md: 1 }} spacing={4}>
-                
-                <Box p={4} bg="rgba(255, 255, 255, 0.1)" borderRadius="xl" textAlign="center">
-                  <Text fontSize="3xl" mb={2}>📥</Text>
-                  <Text color="white" fontWeight="semibold" mb={1}>
-                    Exportar Dados (JSON)
-                  </Text>
-                  <Text fontSize="xs" color="whiteAlpha.600" mb={3}>
-                    Baixe um **backup completo** das suas entradas e saídas.
-                  </Text>
-                  <Button 
-                    size="sm" 
-                    colorScheme="orange" 
-                    borderRadius="lg" 
-                    w="full"
-                    onClick={handleExportData}
-                    isLoading={isExporting}  
-                    loadingText="Baixando..."
-                  >
-                    Baixar
-                  </Button>
-                </Box>
-              </SimpleGrid>
-            </VStack>
-          </GlassCard>
-        </MotionBox>
-
-        <MotionBox variants={itemVariants} mb={6}>
-          <GlassCard gradient="linear(to-br, #f093fb, #f5576c)">
-            <VStack align="stretch" spacing={4}>
-              <HStack>
-                <Text fontSize="2xl">💬</Text>
-                <Heading size="md" color="white">
-                  Suporte e Ajuda
-                </Heading>
-              </HStack>
-              <Text color="whiteAlpha.800" fontSize="sm">
-                Nossa equipe está sempre pronta para ajudar você! Entre em contato através dos canais abaixo:
-              </Text>
-
-              <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
-                <Button
-                  as={Link}
-                  href="mailto:suporte@finanzas.com"
-                  size="lg"
-                  bg="rgba(255, 255, 255, 0.2)"
-                  color="white"
-                  _hover={{ 
-                    bg: "rgba(255, 255, 255, 0.3)",
-                    transform: "translateY(-2px)"
-                  }}
-                  transition="all 0.3s"
-                  borderRadius="xl"
-                  leftIcon={<Text fontSize="xl">📧</Text>}
-                >
-                  Email Suporte
-                </Button>
-
-                <Button
-                  as={Link}
-                  href="https://wa.me/5511960428846"
-                  target="_blank"
-                  size="lg"
-                  bg="rgba(255, 255, 255, 0.2)"
-                  color="white"
-                  _hover={{ 
-                    bg: "rgba(255, 255, 255, 0.3)",
-                    transform: "translateY(-2px)"
-                  }}
-                  transition="all 0.3s"
-                  borderRadius="xl"
-                  leftIcon={<Text fontSize="xl">💬</Text>}
-                >
-                  WhatsApp
-                </Button>
-              </SimpleGrid>
-
-              <Divider borderColor="whiteAlpha.300" />
-
-              <HStack justify="space-between" flexWrap="wrap" gap={2}>
-                <VStack align="start" spacing={0}>
-                  <Text color="white" fontSize="sm" fontWeight="semibold">
-                    📚 Central de Ajuda
-                  </Text>
-                  <Text color="whiteAlpha.600" fontSize="xs">
-                    Tutoriais e FAQ
-                  </Text>
-                </VStack>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  color="white"
-                  _hover={{ bg: 'whiteAlpha.200' }}
-                  borderRadius="lg"
-                >
-                  Acessar →
-                </Button>
-              </HStack>
-            </VStack>
-          </GlassCard>
-        </MotionBox>
-
-        <MotionBox variants={itemVariants}>
-          <GlassCard>
-            <VStack align="stretch" spacing={4}>
-              <HStack>
-                <Text fontSize="2xl">ℹ️</Text>
-                <Heading size="md" color="white">
-                  Sobre o FinanZas
-                </Heading>
-              </HStack>
-
-              <SimpleGrid columns={{ base: 2, md: 4 }} spacing={4} textAlign="center">
-                <Box>
-                  <Text color="whiteAlpha.600" fontSize="xs" mb={1}>Versão</Text>
-                  <Text color="white" fontWeight="bold">4.5.0</Text>
-                </Box>
-                <Box>
-                  <Text color="whiteAlpha.600" fontSize="xs" mb={1}>Última Atualização</Text>
-                  <Text color="white" fontWeight="bold">Out 2025</Text>
-                </Box>
-                <Box>
-                  <Text color="whiteAlpha.600" fontSize="xs" mb={1}>Status</Text>
-                  <Badge colorScheme="green" px={2} py={1} borderRadius="md">✓ Online</Badge>
-                </Box>
-                <Box>
-                  <Text color="whiteAlpha.600" fontSize="xs" mb={1}>Usuários</Text>
-                  <Text color="white" fontWeight="bold">10K+</Text>
-                </Box>
-              </SimpleGrid>
-
-              <Divider borderColor="whiteAlpha.300" />
-
-              <HStack justify="center" spacing={4} flexWrap="wrap">
-                <Link
-                  color="whiteAlpha.700"
-                  fontSize="sm"
-                  _hover={{ color: "white", textDecoration: "underline" }}
-                >
-                  Termos de Uso
-                </Link>
-                <Text color="whiteAlpha.500">•</Text>
-                <Link
-                  color="whiteAlpha.700"
-                  fontSize="sm"
-                  _hover={{ color: "white", textDecoration: "underline" }}
-                >
-                  Política de Privacidade
-                </Link>
-                <Text color="whiteAlpha.500">•</Text>
-                <Link
-                  color="whiteAlpha.700"
-                  fontSize="sm"
-                  _hover={{ color: "white", textDecoration: "underline" }}
-                >
-                  Licenças
-                </Link>
-              </HStack>
-
-              <Text textAlign="center" color="whiteAlpha.600" fontSize="xs" pt={2}>
-                Made with 💜 by FinanZas Team
-              </Text>
-            </VStack>
-          </GlassCard>
-        </MotionBox>
-      </motion.div>
-    </Box>
-  );
+if (!BOT_API_KEY) {
+    console.error("❌ Defina a variável de ambiente BOT_API_KEY antes de iniciar o bot.");
+    process.exit(1);
 }
 
-export default Configuracoes;
+const api = axios.create({ baseURL: API_BASE_URL, timeout: 30000 });
+const apiHeaders = (whatsappId) => ({
+    "X-Bot-Key": BOT_API_KEY,
+    "X-Whatsapp-Id": whatsappId,
+});
+
+const vinculados = new Set();
+const userSessionState = {};
+
+const client = new Client({
+    authStrategy: new LocalAuth({ clientId: "finanzas-bot" }),
+    puppeteer: {
+        args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    },
+});
+
+client.on("qr", (qr) => {
+    qrcode.generate(qr, { small: true });
+    console.log("QR RECEIVED. Scan this QR code with your WhatsApp linked devices.");
+});
+
+client.on("ready", () => {
+    console.log("✅ WhatsApp Client está pronto! O bot está conectado e pronto para receber mensagens.");
+    console.log(`Conectando ao backend em: ${API_BASE_URL}`);
+});
+
+client.on("auth_failure", (msg) => {
+    console.error("❌ Falha na Autenticação:", msg);
+});
+
+client.on("disconnected", (reason) => {
+    console.log("Cliente desconectado", reason);
+    client.initialize();
+});
+
+const formatCurrency = (value) =>
+    new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
+
+async function verificarVinculo(whatsappId) {
+    if (vinculados.has(whatsappId)) return true;
+    try {
+        await api.get("/whatsapp/status", { headers: apiHeaders(whatsappId) });
+        vinculados.add(whatsappId);
+        return true;
+    } catch (error) {
+        if (error.response?.status === 401 && error.response.data?.erro === "nao_vinculado") {
+            return false;
+        }
+        throw error;
+    }
+}
+
+async function tratarDesvinculo(error, message) {
+    if (error.response?.status === 401 && error.response.data?.erro === "nao_vinculado") {
+        vinculados.delete(message.from);
+        delete userSessionState[message.from];
+        await message.reply('Sua conta foi desconectada. Envie "oi" para conectar novamente.');
+        return true;
+    }
+    return false;
+}
+
+async function sendMainMenu(message) {
+    const whatsappId = message.from;
+    userSessionState[whatsappId] = "in_menu";
+    await message.reply(
+        `*Menu Principal*
+Digite o *número* da opção desejada:
+
+1️⃣ - Registrar Entrada
+2️⃣ - Registrar Saída
+3️⃣ - Resumo Financeiro
+4️⃣ - Desconectar`
+    );
+}
+
+async function sendTransactionMenu(message, type) {
+    const whatsappId = message.from;
+    const isEntrada = type === "entrada";
+    const typeLabel = isEntrada ? "Entrada (Receita)" : "Saída (Despesa)";
+
+    userSessionState[whatsappId] = isEntrada
+        ? "awaiting_entrada_action"
+        : "awaiting_saida_action";
+
+    await message.reply(
+        `*Menu de ${typeLabel}*
+Digite o *número* da opção desejada:
+
+1️⃣ - Registrar nova ${isEntrada ? "Entrada" : "Saída"}
+2️⃣ - Ver últimos registros de ${typeLabel}
+3️⃣ - Voltar ao Menu Principal`
+    );
+}
+
+async function conectar(message, body) {
+    const whatsappId = message.from;
+    const codigo = body
+        .replace(/^conectar/i, "")
+        .replace(/[^a-zA-Z0-9]/g, "")
+        .toUpperCase();
+
+    if (codigo.length !== 6) {
+        await message.reply(
+            "❌ Código inválido. No site, vá em *Configurações*, clique em *Gerar código de conexão* e envie aqui:\n\nCONECTAR SEU_CODIGO"
+        );
+        return;
+    }
+
+    try {
+        await api.post("/whatsapp/vincular", { codigo }, { headers: apiHeaders(whatsappId) });
+        vinculados.add(whatsappId);
+        userSessionState[whatsappId] = "in_menu";
+        await message.reply(`✅ Pronto, agora você está conectado! \n\nDigite *MENU* para ver as opções.`);
+    } catch (error) {
+        const erro = error.response?.data?.erro;
+        if (erro === "muitas_tentativas") {
+            await message.reply("⛔ Muitas tentativas incorretas. Aguarde 10 minutos e gere um novo código no site.");
+        } else if (erro === "codigo_invalido") {
+            await message.reply("❌ Código inválido ou expirado. Gere um novo código no site (Configurações) e tente de novo.");
+        } else {
+            console.error("Erro ao vincular:", error.response?.data || error.message);
+            await message.reply("⚠️ Não consegui concluir a conexão agora. Tente novamente em instantes.");
+        }
+    }
+}
+
+async function processTransaction(message, text) {
+    const whatsappId = message.from;
+
+    const parts = text.toLowerCase().split(" ");
+    const command = parts[0];
+    const valueStr = parts[1];
+
+    const rawDescription = parts.slice(2).join(" ");
+    const description =
+        rawDescription ||
+        (command === "entrada" ? "Entrada via WhatsApp" : "Saída via WhatsApp");
+
+    if (command !== "entrada" && command !== "saida") {
+        await message.reply("Comando não reconhecido. Digite *MENU* para ver as opções.");
+        return false;
+    }
+
+    const value = parseFloat((valueStr || "").replace(",", "."));
+
+    if (isNaN(value) || value <= 0) {
+        await message.reply(
+            `❌ Valor inválido. Use o formato: [valor] [descrição].\nEx: 100 salário`
+        );
+        return false;
+    }
+
+    const isEntrada = command === "entrada";
+
+    const payload = {
+        descricao: description.slice(0, 255),
+        valor: value,
+        data: new Date().toLocaleDateString("en-CA", { timeZone: "America/Sao_Paulo" }),
+        ...(isEntrada
+            ? {
+                  categoria: /sal[aá]rio|fixo/.test(description) ? "salario" : "outros",
+              }
+            : {
+                  tipo: description.includes("fixa") ? "fixa" : "variável",
+              }),
+    };
+
+    const endpoint = isEntrada ? "/entradas" : "/saidas";
+
+    try {
+        await api.post(endpoint, payload, { headers: apiHeaders(whatsappId) });
+
+        const typeLabel = isEntrada ? "Entrada" : "Saída";
+        await message.reply(
+            `✅ ${typeLabel} de ${formatCurrency(value)} (${payload.descricao}) registrada com sucesso no FinanZas!`
+        );
+        return true;
+    } catch (error) {
+        if (await tratarDesvinculo(error, message)) return false;
+
+        console.error("Erro ao comunicar com o backend:", error.response?.data || error.message);
+
+        let errorMessage = "Erro desconhecido ao registrar a transação.";
+        if (error.response?.status === 400) {
+            errorMessage = "Dados inválidos. Confira o valor e a descrição.";
+        } else if (error.code === "ECONNREFUSED" || error.code === "ECONNABORTED") {
+            errorMessage = "O servidor não respondeu. Tente novamente em instantes.";
+        }
+
+        await message.reply(`❌ Ocorreu um erro: ${errorMessage}`);
+        return false;
+    }
+}
+
+async function getFinancialSummary(message) {
+    const whatsappId = message.from;
+    const headers = apiHeaders(whatsappId);
+
+    try {
+        const [entradasResponse, saidasResponse] = await Promise.all([
+            api.get("/entradas/total", { headers }),
+            api.get("/saidas/total", { headers }),
+        ]);
+
+        const totalEntradas = entradasResponse.data.total;
+        const totalSaidas = saidasResponse.data.total;
+        const saldo = totalEntradas - totalSaidas;
+
+        await message.reply(`*📊 Resumo Financeiro*
+
+*Entradas (Total)*: ${formatCurrency(totalEntradas)}
+*Saídas (Total)*: ${formatCurrency(totalSaidas)}
+*Saldo Atual (Entradas - Saídas)*: ${formatCurrency(saldo)}`);
+
+        return true;
+    } catch (error) {
+        if (await tratarDesvinculo(error, message)) return false;
+
+        console.error("Erro ao buscar resumo financeiro:", error.response?.data || error.message);
+        await message.reply(
+            "❌ Não consegui buscar o resumo agora. Tente novamente em instantes.\n\nDigite *MENU* para ver as opções."
+        );
+        return false;
+    }
+}
+
+async function getDetailedTransactions(message, type) {
+    const whatsappId = message.from;
+    const typeLabel = type === "entradas" ? "Entradas (Receitas)" : "Saídas (Despesas)";
+
+    try {
+        const response = await api.get(`/${type}`, { headers: apiHeaders(whatsappId) });
+        const transactions = response.data;
+
+        if (!Array.isArray(transactions) || transactions.length === 0) {
+            await message.reply(`Você não tem ${typeLabel.toLowerCase()} registradas.`);
+            return true;
+        }
+
+        const ultimas = [...transactions]
+            .sort((a, b) => String(b.data).localeCompare(String(a.data)))
+            .slice(0, 5);
+
+        let detailedMessage = `*📋 Últimas ${ultimas.length} ${typeLabel}*:\n\n`;
+
+        ultimas.forEach((t, index) => {
+            const data = t.data ? t.data.split("-").reverse().join("/") : "N/A";
+
+            detailedMessage += `*${index + 1}. ${t.descricao || "Sem descrição"}*\n`;
+            detailedMessage += `  - Valor: ${formatCurrency(t.valor)}\n`;
+            detailedMessage += `  - Data: ${data}\n`;
+
+            if (type === "entradas") {
+                detailedMessage += `  - Salário/Fixo: ${t.salario ? "Sim" : "Não"}\n`;
+            } else {
+                const tipo = t.tipo || "variável";
+                detailedMessage += `  - Tipo: ${tipo.charAt(0).toUpperCase() + tipo.slice(1)}\n`;
+            }
+            detailedMessage += "---------------------\n";
+        });
+
+        await message.reply(detailedMessage);
+        return true;
+    } catch (error) {
+        if (await tratarDesvinculo(error, message)) return false;
+
+        console.error(`Erro ao buscar ${type}:`, error.response?.data || error.message);
+        await message.reply(`❌ Não consegui buscar suas ${typeLabel.toLowerCase()} agora. Tente novamente em instantes.`);
+        return false;
+    }
+}
+
+const greetings = ["oi", "olá", "ola", "bom dia", "boa tarde", "boa noite", "eai", "opa", "ei"];
+
+client.on("message", async (message) => {
+    if (message.from.endsWith("@g.us") || message.isStatus || message.from === "status@broadcast") {
+        return;
+    }
+
+    const whatsappId = message.from;
+    const body = (message.body || "").trim();
+    const bodyLower = body.toLowerCase();
+
+    try {
+        if (/^conectar(\s|$)/i.test(body)) {
+            await conectar(message, body);
+            return;
+        }
+
+        const vinculado = await verificarVinculo(whatsappId);
+
+        if (!vinculado) {
+            if (greetings.includes(bodyLower)) {
+                await message.reply(
+                    `Seja bem vindo(a) ao WhatsApp do FinanZas!
+Para usar a ferramenta, entre no site ${SITE_URL}
+Faça login/cadastro e, no menu *Configurações*, clique em *Gerar código de conexão*.
+Depois envie o código aqui, assim:
+
+CONECTAR SEU_CODIGO`
+                );
+                userSessionState[whatsappId] = "awaiting_connect";
+            } else {
+                await message.reply(
+                    'Olá! Parece que você ainda não se conectou. Envie "oi" para ver as instruções de como começar.'
+                );
+            }
+            return;
+        }
+
+        const session = userSessionState[whatsappId];
+
+        if (bodyLower === "menu" || bodyLower === "ajuda") {
+            await sendMainMenu(message);
+            return;
+        }
+
+        if (session === "in_menu") {
+            switch (body) {
+                case "1":
+                    await sendTransactionMenu(message, "entrada");
+                    return;
+                case "2":
+                    await sendTransactionMenu(message, "saida");
+                    return;
+                case "3": {
+                    userSessionState[whatsappId] = "fetching_summary";
+                    await message.reply("Buscando seu resumo financeiro... Aguarde um momento.");
+                    const success = await getFinancialSummary(message);
+                    if (success) {
+                        await sendMainMenu(message);
+                    }
+                    return;
+                }
+                case "4":
+                    try {
+                        await api.delete("/whatsapp/vinculo", { headers: apiHeaders(whatsappId) });
+                    } catch (error) {
+                        console.error("Erro ao desconectar:", error.response?.data || error.message);
+                    }
+                    vinculados.delete(whatsappId);
+                    delete userSessionState[whatsappId];
+                    await message.reply(
+                        'Sessão encerrada. Você foi desconectado. 👋\n\nPara usar o bot novamente, envie "oi".'
+                    );
+                    return;
+                default:
+                    await message.reply("Opção inválida. Por favor, digite *MENU* para ver as opções novamente.");
+                    return;
+            }
+        }
+
+        if (session === "awaiting_entrada_action" || session === "awaiting_saida_action") {
+            const type = session === "awaiting_entrada_action" ? "entrada" : "saida";
+            const isEntrada = type === "entrada";
+
+            switch (body) {
+                case "1":
+                    userSessionState[whatsappId] = isEntrada ? "awaiting_entrada" : "awaiting_saida";
+                    await message.reply(
+                        `Ok, vamos registrar uma *${isEntrada ? "Entrada" : "Saída"}*.\n\nPor favor, digite o *valor* e a *descrição*.\n(Ex: ${
+                            isEntrada ? "2000 salário" : "45 almoço"
+                        })`
+                    );
+                    return;
+                case "2":
+                    userSessionState[whatsappId] = "fetching_details";
+                    await message.reply("Buscando seus registros detalhados... Aguarde um momento.");
+                    await getDetailedTransactions(message, isEntrada ? "entradas" : "saidas");
+                    await sendTransactionMenu(message, type);
+                    return;
+                case "3":
+                    await sendMainMenu(message);
+                    return;
+                default:
+                    await message.reply("Opção inválida. Por favor, digite *1*, *2* ou *3*.");
+                    return;
+            }
+        }
+
+        if (session === "awaiting_entrada") {
+            const success = await processTransaction(message, "entrada " + body);
+            if (success) {
+                await sendTransactionMenu(message, "entrada");
+            } else {
+                userSessionState[whatsappId] = "awaiting_entrada";
+            }
+            return;
+        }
+
+        if (session === "awaiting_saida") {
+            const success = await processTransaction(message, "saida " + body);
+            if (success) {
+                await sendTransactionMenu(message, "saida");
+            } else {
+                userSessionState[whatsappId] = "awaiting_saida";
+            }
+            return;
+        }
+
+        await message.reply("Comando não reconhecido. Digite *MENU* para ver a lista de opções.");
+    } catch (error) {
+        console.error("Erro ao processar mensagem:", error.response?.data || error.message);
+        await message.reply("⚠️ Não consegui falar com o servidor agora. Tente novamente em instantes.");
+    }
+});
+
+client.initialize();

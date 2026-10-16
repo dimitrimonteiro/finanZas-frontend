@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { initializeApp } from 'firebase/app';
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword } from 'firebase/auth'; //
+import axios from 'axios';
 
 const firebaseConfig = {
   apiKey: "AIzaSyACJziOGGZFkBEzez29Ye8GIBDle6ONJ3U", 
@@ -16,6 +17,17 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const googleProvider = new GoogleAuthProvider();
+
+const API_BASE_URL = 'https://finanzas-backend-rmik.onrender.com';
+
+axios.interceptors.request.use(async (config) => {
+  const user = auth.currentUser;
+  if (user && config.url && config.url.startsWith(API_BASE_URL)) {
+    const token = await user.getIdToken();
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
 
 const AuthContext = createContext();
 

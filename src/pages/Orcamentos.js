@@ -20,6 +20,7 @@ import axios from "axios";
 import { useAuth } from "../auth/AuthContext";
 import MonthNavigator from "../components/MonthNavigator";
 import { categoriasSaida } from "../utils/categoriasSaida";
+import { Sk, CardsSkeleton, SlowServerHint } from "../components/Skeletons";
 
 const MotionBox = motion(Box);
 const API = "http://localhost:8080/api";
@@ -55,6 +56,7 @@ const GlassCard = ({ children, gradient, ...props }) => (
 );
 
 function Orcamentos() {
+  const [carregando, setCarregando] = useState(true);
   const [saidas, setSaidas] = useState([]);
   const [orcamentos, setOrcamentos] = useState({}); // categoria -> limite salvo
   const [limites, setLimites] = useState({}); // categoria -> valor digitado
@@ -79,8 +81,10 @@ function Orcamentos() {
       });
       setOrcamentos(mapa);
       setLimites(mapa);
+      setCarregando(false);
     } catch (error) {
       console.error("Erro ao buscar orçamentos:", error);
+      setCarregando(false);
       toast({
         title: "❌ Erro ao carregar",
         description: "Não foi possível conectar ao servidor.",
@@ -170,7 +174,9 @@ function Orcamentos() {
             <Text color="whiteAlpha.800" fontSize="sm" fontWeight="semibold">
               🧮 Resumo das categorias com limite
             </Text>
-            {catsComLimite.length === 0 ? (
+            {carregando ? (
+              <Sk h="60px" />
+            ) : catsComLimite.length === 0 ? (
               <Text color="whiteAlpha.700">Nenhum limite definido ainda. Defina abaixo para começar.</Text>
             ) : (
               <>
@@ -195,7 +201,14 @@ function Orcamentos() {
         </GlassCard>
       </MotionBox>
 
-      <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={6}>
+      {carregando && (
+        <VStack spacing={4} align="stretch">
+          <CardsSkeleton count={6} columns={{ base: 1, md: 2, lg: 3 }} minH="230px" />
+          <SlowServerHint />
+        </VStack>
+      )}
+
+      <SimpleGrid display={carregando ? "none" : "grid"} columns={{ base: 1, md: 2, lg: 3 }} spacing={6}>
         {Object.entries(categoriasSaida).map(([key, cfg]) => {
           const gasto = gastos[key] || 0;
           const limite = orcamentos[key] || 0;

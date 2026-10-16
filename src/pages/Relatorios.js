@@ -39,6 +39,7 @@ import html2canvas from 'html2canvas';
 import 'jspdf-autotable';
 import { format } from "date-fns";
 import { parseLocalDate, hojeISO } from "../utils/dates";
+import { PageSkeleton } from "../components/Skeletons";
 
 const MotionBox = motion(Box);
 
@@ -117,7 +118,8 @@ const processarDadosMensais = (allEntradas, allSaidas) => {
 };
 
 function Relatorios() {
-  const [allEntradas, setAllEntradas] = useState([]); 
+  const [carregando, setCarregando] = useState(true);
+  const [allEntradas, setAllEntradas] = useState([]);
   const [allSaidas, setAllSaidas] = useState([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const toast = useToast();
@@ -141,6 +143,7 @@ function Relatorios() {
 
       setAllEntradas(fetchedEntradas);
       setAllSaidas(fetchedSaidas);
+      setCarregando(false);
 
       const currentDate = new Date();
       const currentMonth = currentDate.getMonth();
@@ -181,6 +184,7 @@ function Relatorios() {
 
     } catch (error) {
       console.error("Erro ao buscar dados dos relatórios:", error);
+      setCarregando(false);
       toast({
         title: "❌ Erro ao carregar dados",
         description: "Não foi possível conectar ao servidor.",
@@ -356,6 +360,10 @@ function Relatorios() {
         });
     });
   };
+
+  if (carregando) {
+    return <PageSkeleton cards={4} charts={2} />;
+  }
 
   const containerVariants = {
     hidden: { opacity: 0 },

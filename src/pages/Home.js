@@ -36,6 +36,7 @@ import { useAuth } from '../auth/AuthContext';
 import { parseLocalDate, formatDateBR } from '../utils/dates';
 import { format } from 'date-fns';
 import { categoriaDe } from '../utils/categoriasSaida';
+import { PageSkeleton } from '../components/Skeletons';
 
 const MotionBox = motion(Box);
 const MotionFlex = motion(Flex);
@@ -129,7 +130,8 @@ const formatPercentual = (percentual) => {
 };
 
 function Dashboard() {
-  const [entradas, setEntradas] = useState([]); 
+  const [carregando, setCarregando] = useState(true);
+  const [entradas, setEntradas] = useState([]);
   const [saidas, setSaidas] = useState([]);
   const [dadosMesAtual, setDadosMesAtual] = useState({
     entradas: 0,
@@ -202,6 +204,7 @@ function Dashboard() {
       
       setEntradas(allEntradas);
             setSaidas(allSaidas);
+      setCarregando(false);
 
       try {
         const orcamentosResponse = await axios.get(`https://finanzas-backend-rmik.onrender.com/api/orcamentos?userId=${userId}`);
@@ -225,6 +228,7 @@ function Dashboard() {
 
     } catch (error) {
       console.error("Erro ao buscar dados do dashboard:", error);
+      setCarregando(false);
     }
   };
 
@@ -247,6 +251,10 @@ function Dashboard() {
   ];
 
   const dadosLinha = processarDadosMensais(entradas, saidas);
+  if (carregando) {
+    return <PageSkeleton cards={4} charts={2} />;
+  }
+
   const containerVariants = {
     hidden: { opacity: 0 },
     show: {

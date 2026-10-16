@@ -54,10 +54,10 @@ function CadastroPage() {
       return;
     }
 
-    if (password.length < 6) {
+    if (password.length < 8 || !/[A-Za-z]/.test(password) || !/\d/.test(password)) {
       toast({
-        title: '⚠️ Senha muito curta',
-        description: 'A senha deve ter no mínimo 6 caracteres.',
+        title: '⚠️ Senha fraca',
+        description: 'Use no mínimo 8 caracteres, com letras e números.',
         status: 'warning',
         duration: 3000,
         isClosable: true,

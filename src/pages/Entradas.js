@@ -38,7 +38,8 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import MonthNavigator from "../components/MonthNavigator";
 import { ptBR } from "date-fns/locale";
-import { parseLocalDate, toISODateLocal } from "../utils/dates";
+import { parseLocalDate, toISODateLocal, hojeISO } from "../utils/dates";
+import { Sk, ListSkeleton } from "../components/Skeletons";
 
 const MotionBox = motion(Box);
 
@@ -91,13 +92,14 @@ const categoriaConfig = {
 };
 
 function Entradas() {
+  const [carregando, setCarregando] = useState(true);
   const [entradas, setEntradas] = useState([]);
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
 const [novaEntrada, setNovaEntrada] = useState({
     descricao: "",
     valor: "",
-    data: "",
+    data: hojeISO(),
     categoria: "outros",
   });
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
@@ -120,8 +122,10 @@ const [novaEntrada, setNovaEntrada] = useState({
         return dataEntrada.getMonth() === selectedMonth && dataEntrada.getFullYear() === selectedYear;
       });
       setEntradas(entradasDoMes);
+      setCarregando(false);
     } catch (error) {
       console.error("Erro ao buscar entradas:", error);
+      setCarregando(false);
       toast({
         title: "❌ Erro ao carregar",
         description: "Não foi possível conectar ao servidor.",
@@ -168,7 +172,18 @@ useEffect(() => {
       return;
     }
     
-    const payload = { 
+    if (!novaEntrada.data) {
+      toast({
+        title: "⚠️ Data obrigatória",
+        description: "Selecione a data da entrada.",
+        status: "warning",
+        duration: 3000,
+        position: "top-right",
+      });
+      return;
+    }
+
+    const payload = {
       ...novaEntrada, 
       userId,
       valor: Number(novaEntrada.valor),
@@ -192,7 +207,7 @@ useEffect(() => {
           position: "top-right",
         });
       }
-      setNovaEntrada({ descricao: "", valor: "", data: "", categoria: "outros" });
+      setNovaEntrada({ descricao: "", valor: "", data: hojeISO(), categoria: "outros" });
       setMostrarFormulario(false);
       setEntradaParaEditar(null);
       fetchEntradas();
@@ -303,7 +318,7 @@ const totalSalarios = entradas.filter(e => e.categoria === "salario").reduce((ac
           <Button
             onClick={() => {
               setMostrarFormulario(!mostrarFormulario);
-              setNovaEntrada({ descricao: "", valor: "", data: "", categoria: "outros" });
+              setNovaEntrada({ descricao: "", valor: "", data: hojeISO(), categoria: "outros" });
               setEntradaParaEditar(null);
             }}
             size="lg"
@@ -333,7 +348,7 @@ const totalSalarios = entradas.filter(e => e.categoria === "salario").reduce((ac
           <GlassCard gradient="linear(to-br, #11998e, #38ef7d)">
             <Stat>
               <StatLabel color="whiteAlpha.800" fontSize="sm">Total de Entradas</StatLabel>
-              <StatNumber fontSize="3xl" color="white">{formatCurrency(totalEntradas)}</StatNumber>
+              <Sk isLoaded={!carregando}><StatNumber fontSize="3xl" color="white">{formatCurrency(totalEntradas)}</StatNumber></Sk>
               <StatHelpText color="green.300" mb={0}>
                 {entradas.length} {entradas.length === 1 ? 'registro' : 'registros'} este mês
               </StatHelpText>
@@ -343,7 +358,7 @@ const totalSalarios = entradas.filter(e => e.categoria === "salario").reduce((ac
           <GlassCard gradient="linear(to-br, #667eea, #764ba2)">
             <Stat>
               <StatLabel color="whiteAlpha.800" fontSize="sm">💼 Salários</StatLabel>
-              <StatNumber fontSize="3xl" color="white">{formatCurrency(totalSalarios)}</StatNumber>
+              <Sk isLoaded={!carregando}><StatNumber fontSize="3xl" color="white">{formatCurrency(totalSalarios)}</StatNumber></Sk>
           <StatHelpText color="purple.300" mb={0}>
                 {entradas.filter(e => e.categoria === "salario").length} recebimento(s)
               </StatHelpText>
@@ -353,7 +368,7 @@ const totalSalarios = entradas.filter(e => e.categoria === "salario").reduce((ac
           <GlassCard gradient="linear(to-br, #fc4a1a, #f7b733)">
             <Stat>
               <StatLabel color="whiteAlpha.800" fontSize="sm">💎 Outras Fontes</StatLabel>
-              <StatNumber fontSize="3xl" color="white">{formatCurrency(totalOutros)}</StatNumber>
+              <Sk isLoaded={!carregando}><StatNumber fontSize="3xl" color="white">{formatCurrency(totalOutros)}</StatNumber></Sk>
               <StatHelpText color="orange.300" mb={0}>
                 Freelances, extras, etc
               </StatHelpText>
@@ -427,7 +442,7 @@ const totalSalarios = entradas.filter(e => e.categoria === "salario").reduce((ac
 
                 <FormControl>
                   <FormLabel color="whiteAlpha.900" fontSize="sm" fontWeight="semibold">
-                    📅 Data
+                    📅 Data *
                   </FormLabel>
                   <DatePicker
                     selected={novaEntrada.data ? parseLocalDate(novaEntrada.data) : null}
@@ -510,7 +525,9 @@ const totalSalarios = entradas.filter(e => e.categoria === "salario").reduce((ac
         animate="show"
       >
         <VStack spacing={4} align="stretch">
-          {entradas.length === 0 ? (
+          {carregando ? (
+            <ListSkeleton count={4} />
+          ) : entradas.length === 0 ? (
             <GlassCard>
               <VStack py={12} spacing={4}>
                 <Text fontSize="6xl">📭</Text>

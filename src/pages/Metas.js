@@ -39,6 +39,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import { ptBR } from "date-fns/locale";
 import AportesMeta from "../components/AportesMeta";
 import { parseLocalDate, toISODateLocal, diasAte } from "../utils/dates";
+import { Sk, ListSkeleton } from "../components/Skeletons";
 
 const MotionBox = motion(Box);
 
@@ -99,6 +100,7 @@ const categoriaConfig = {
 };
 
 function Metas() {
+  const [carregando, setCarregando] = useState(true);
   const [metas, setMetas] = useState([]);
   const [novaMeta, setNovaMeta] = useState({
     nomeMeta: "",
@@ -123,8 +125,10 @@ function Metas() {
       const userId = currentUser.uid;
       const response = await axios.get(`${baseUrl}?userId=${userId}`);
       setMetas(response.data);
+      setCarregando(false);
     } catch (error) {
       console.error("Erro ao buscar metas:", error);
+      setCarregando(false);
     }
   };
 
@@ -324,7 +328,9 @@ function Metas() {
                 💰 Progresso Total das Metas
               </Text>
               <Heading size="lg" color="white">
-                {formatCurrency(totalAtual)} / {formatCurrency(totalGeral)}
+                <Sk as="span" display="inline-block" minW="220px" isLoaded={!carregando}>
+                  {formatCurrency(totalAtual)} / {formatCurrency(totalGeral)}
+                </Sk>
               </Heading>
               <Text color="whiteAlpha.700" fontSize="sm">
                 {metas.length} {metas.length === 1 ? 'meta ativa' : 'metas ativas'}
@@ -534,7 +540,9 @@ function Metas() {
         animate="show"
       >
         <VStack spacing={6} align="stretch">
-          {metas.length === 0 ? (
+          {carregando ? (
+            <ListSkeleton count={2} height="170px" />
+          ) : metas.length === 0 ? (
             <GlassCard>
               <VStack py={12} spacing={4}>
                 <Text fontSize="6xl">🎯</Text>

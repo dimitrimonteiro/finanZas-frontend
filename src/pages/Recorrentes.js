@@ -31,6 +31,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import axios from "axios";
 import { useAuth } from "../auth/AuthContext";
 import { categoriasSaida } from "../utils/categoriasSaida";
+import { ListSkeleton } from "../components/Skeletons";
 
 const MotionBox = motion(Box);
 const BASE_URL = "http://localhost:8080/api/recorrentes";
@@ -79,6 +80,7 @@ const emptyForm = {
 };
 
 function Recorrentes() {
+  const [carregando, setCarregando] = useState(true);
   const [recorrentes, setRecorrentes] = useState([]);
   const [form, setForm] = useState(emptyForm);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
@@ -95,8 +97,10 @@ function Recorrentes() {
     try {
       const response = await axios.get(`${BASE_URL}?userId=${currentUser.uid}`);
       setRecorrentes(response.data);
+      setCarregando(false);
     } catch (error) {
       console.error("Erro ao buscar recorrentes:", error);
+      setCarregando(false);
       toast({ title: "❌ Erro ao carregar", status: "error", duration: 3000, position: "top-right" });
     }
   };
@@ -356,7 +360,9 @@ function Recorrentes() {
       </AnimatePresence>
 
       <VStack spacing={4} align="stretch">
-        {recorrentes.length === 0 ? (
+        {carregando ? (
+          <ListSkeleton count={3} />
+        ) : recorrentes.length === 0 ? (
           <GlassCard>
             <VStack py={12} spacing={4}>
               <Text fontSize="6xl">🔁</Text>
