@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Box, Skeleton, SimpleGrid, VStack, HStack, Text } from "@chakra-ui/react";
 
-// Skeleton com as cores do tema escuro do app
 export const Sk = (props) => (
   <Skeleton startColor="whiteAlpha.100" endColor="whiteAlpha.300" borderRadius="lg" {...props} />
 );
@@ -21,7 +20,6 @@ const SkeletonCard = ({ children, ...props }) => (
   </Box>
 );
 
-// Aviso que aparece se o carregamento demorar (Render free tier "acordando")
 export function SlowServerHint({ delay = 5000 }) {
   const [mostrar, setMostrar] = useState(false);
 
@@ -47,7 +45,6 @@ export function SlowServerHint({ delay = 5000 }) {
   );
 }
 
-// Linha de cards de estatística
 export function CardsSkeleton({ count = 3, columns = { base: 1, md: 3 }, minH }) {
   return (
     <SimpleGrid columns={columns} spacing={6}>
@@ -64,7 +61,6 @@ export function CardsSkeleton({ count = 3, columns = { base: 1, md: 3 }, minH })
   );
 }
 
-// Lista de itens (entradas, saídas, metas, recorrências)
 export function ListSkeleton({ count = 4, height, showHint = true }) {
   return (
     <VStack spacing={4} align="stretch">
@@ -87,7 +83,6 @@ export function ListSkeleton({ count = 4, height, showHint = true }) {
   );
 }
 
-// Card de gráfico
 export function ChartSkeleton({ height = "300px" }) {
   return (
     <SkeletonCard>
@@ -99,7 +94,6 @@ export function ChartSkeleton({ height = "300px" }) {
   );
 }
 
-// Página inteira (Home e Relatórios)
 export function PageSkeleton({ cards = 4, charts = 2 }) {
   return (
     <Box w="100%" maxW="1400px" mx="auto">

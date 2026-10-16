@@ -207,7 +207,7 @@ function Dashboard() {
       setCarregando(false);
 
       try {
-        const orcamentosResponse = await axios.get(`https://finanzas-backend-rmik.onrender.com/api/orcamentos?userId=${userId}`);
+        const orcamentosResponse = await axios.get(`http://localhost:8080/api/orcamentos?userId=${userId}`);
         const gastoPorCategoria = {};
         saidasMesAtual.forEach((s) => {
           const cat = s.categoria || "outros";

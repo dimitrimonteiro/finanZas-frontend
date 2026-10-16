@@ -18,7 +18,7 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const googleProvider = new GoogleAuthProvider();
 
-const API_BASE_URL = 'https://finanzas-backend-rmik.onrender.com';
+const API_BASE_URL = 'http://localhost:8080';
 
 axios.interceptors.request.use(async (config) => {
   const user = auth.currentUser;
