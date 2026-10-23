@@ -40,6 +40,7 @@ import MonthNavigator from "../components/MonthNavigator";
 import { ptBR } from "date-fns/locale";
 import { parseLocalDate, toISODateLocal, hojeISO } from "../utils/dates";
 import { Sk, ListSkeleton } from "../components/Skeletons";
+import { API_URL } from "../config";
 
 const MotionBox = motion(Box);
 
@@ -115,7 +116,7 @@ const [novaEntrada, setNovaEntrada] = useState({
     if (!currentUser) return;
     try {
       const userId = currentUser.uid;
-      const response = await axios.get(`http://localhost:8080/api/entradas?userId=${userId}`);
+      const response = await axios.get(`${API_URL}/entradas?userId=${userId}`);
       
   const entradasDoMes = response.data.filter(entrada => {
         const dataEntrada = parseLocalDate(entrada.data);
@@ -191,7 +192,7 @@ useEffect(() => {
 
     try {
       if (entradaParaEditar) {
-        await axios.put(`http://localhost:8080/api/entradas/${entradaParaEditar.id}?userId=${userId}`, payload);
+        await axios.put(`${API_URL}/entradas/${entradaParaEditar.id}?userId=${userId}`, payload);
         toast({ 
           title: "✅ Entrada editada!", 
           status: "success", 
@@ -199,7 +200,7 @@ useEffect(() => {
           position: "top-right",
         });
       } else {
-        await axios.post(`http://localhost:8080/api/entradas?userId=${userId}`, payload);
+        await axios.post(`${API_URL}/entradas?userId=${userId}`, payload);
         toast({ 
           title: "🎉 Entrada adicionada!", 
           status: "success", 
@@ -241,7 +242,7 @@ const iniciarEdicao = (entrada) => {
     if (!currentUser) return;
     const userId = currentUser.uid;
     try {
-      await axios.delete(`http://localhost:8080/api/entradas/${entradaParaExcluir}?userId=${userId}`);
+      await axios.delete(`${API_URL}/entradas/${entradaParaExcluir}?userId=${userId}`);
       toast({ 
         title: "🗑️ Entrada excluída", 
         status: "info", 

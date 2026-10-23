@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { initializeApp } from 'firebase/app';
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword, sendPasswordResetEmail, updateProfile, updatePassword, reauthenticateWithCredential, EmailAuthProvider, verifyBeforeUpdateEmail } from 'firebase/auth';
 import axios from 'axios';
+import { API_URL } from "../config";
 
 const firebaseConfig = {
   apiKey: "AIzaSyACJziOGGZFkBEzez29Ye8GIBDle6ONJ3U", 
@@ -19,7 +20,7 @@ const auth = getAuth(app);
 auth.languageCode = 'pt-BR';
 const googleProvider = new GoogleAuthProvider();
 
-const API_BASE_URL = 'http://localhost:8080';
+const API_BASE_URL = API_URL;
 
 axios.interceptors.request.use(async (config) => {
   const user = auth.currentUser;

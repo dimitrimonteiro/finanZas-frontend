@@ -2,8 +2,9 @@ import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import axios from "axios";
 import { useAuth } from "../auth/AuthContext";
 import { categoriaDe } from "../utils/categoriasSaida";
+import { API_URL } from "../config";
 
-const API = "http://localhost:8080/api";
+const API = API_URL;
 const INTERVALO_MIN_MS = 20000;
 
 const fmt = (v) =>

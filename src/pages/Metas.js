@@ -40,6 +40,7 @@ import { ptBR } from "date-fns/locale";
 import AportesMeta from "../components/AportesMeta";
 import { parseLocalDate, toISODateLocal, diasAte } from "../utils/dates";
 import { Sk, ListSkeleton } from "../components/Skeletons";
+import { API_URL } from "../config";
 
 const MotionBox = motion(Box);
 
@@ -117,7 +118,7 @@ function Metas() {
   const cancelRef = useRef();
   const toast = useToast();
   const { currentUser } = useAuth();
-  const baseUrl = "http://localhost:8080/api/metas";
+  const baseUrl = "`${API_URL}/metas`";
 
   const fetchMetas = async () => {
     if (!currentUser) return;

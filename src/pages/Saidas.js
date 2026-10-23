@@ -39,6 +39,7 @@ import MonthNavigator from "../components/MonthNavigator";
 import { parseLocalDate, toISODateLocal, hojeISO } from "../utils/dates";
 import { categoriasSaida, categoriaDe } from "../utils/categoriasSaida";
 import { Sk, ListSkeleton } from "../components/Skeletons";
+import { API_URL } from "../config";
 
 const MotionBox = motion(Box);
 
@@ -106,7 +107,7 @@ function Saidas() {
     if (!currentUser) return;
     try {
       const userId = currentUser.uid;
-      const response = await axios.get(`http://localhost:8080/api/saidas?userId=${userId}`);
+      const response = await axios.get(`${API_URL}/saidas?userId=${userId}`);
 
 const saidasDoMes = response.data.filter(saida => {
         const dataSaida = parseLocalDate(saida.data);
@@ -179,7 +180,7 @@ useEffect(() => {
 
     try {
       if (saidaParaEditar) {
-        await axios.put(`http://localhost:8080/api/saidas/${saidaParaEditar.id}?userId=${userId}`, payload);
+        await axios.put(`${API_URL}/saidas/${saidaParaEditar.id}?userId=${userId}`, payload);
         toast({ 
           title: "✅ Saída editada!", 
           status: "success", 
@@ -187,7 +188,7 @@ useEffect(() => {
           position: "top-right",
         });
       } else {
-        await axios.post(`http://localhost:8080/api/saidas?userId=${userId}`, payload);
+        await axios.post(`${API_URL}/saidas?userId=${userId}`, payload);
         toast({ 
           title: "🎉 Saída adicionada!", 
           status: "success", 
@@ -230,7 +231,7 @@ useEffect(() => {
     if (!currentUser) return;
     const userId = currentUser.uid;
     try {
-      await axios.delete(`http://localhost:8080/api/saidas/${saidaParaExcluir}?userId=${userId}`);
+      await axios.delete(`${API_URL}/saidas/${saidaParaExcluir}?userId=${userId}`);
       toast({ 
         title: "🗑️ Saída excluída", 
         status: "info", 

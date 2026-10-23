@@ -32,9 +32,10 @@ import axios from "axios";
 import { useAuth } from "../auth/AuthContext";
 import { categoriasSaida } from "../utils/categoriasSaida";
 import { ListSkeleton } from "../components/Skeletons";
+import { API_URL } from "../config";
 
 const MotionBox = motion(Box);
-const BASE_URL = "http://localhost:8080/api/recorrentes";
+const BASE_URL = "`${API_URL}/recorrentes`";
 
 const formatInputCurrency = (value) => {
   if (!value && value !== 0) return "";

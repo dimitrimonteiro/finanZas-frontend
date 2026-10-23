@@ -21,9 +21,10 @@ import { useAuth } from "../auth/AuthContext";
 import MonthNavigator from "../components/MonthNavigator";
 import { categoriasSaida } from "../utils/categoriasSaida";
 import { Sk, CardsSkeleton, SlowServerHint } from "../components/Skeletons";
+import { API_URL } from "../config";
 
 const MotionBox = motion(Box);
-const API = "http://localhost:8080/api";
+const API = API_URL;
 
 const formatCurrency = (value) =>
   new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);

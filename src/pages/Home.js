@@ -37,6 +37,7 @@ import { parseLocalDate, formatDateBR } from '../utils/dates';
 import { format } from 'date-fns';
 import { categoriaDe } from '../utils/categoriasSaida';
 import { PageSkeleton } from '../components/Skeletons';
+import { API_URL } from "../config";
 
 const MotionBox = motion(Box);
 const MotionFlex = motion(Flex);
@@ -150,9 +151,9 @@ function Dashboard() {
     try {
       const userId = currentUser.uid;
       
-      await axios.post(`http://localhost:8080/api/recorrentes/gerar?userId=${userId}`);
-      const allEntradasResponse = await axios.get(`http://localhost:8080/api/entradas?userId=${userId}`);
-      const allSaidasResponse = await axios.get(`http://localhost:8080/api/saidas?userId=${userId}`);
+      await axios.post(`${API_URL}/recorrentes/gerar?userId=${userId}`);
+      const allEntradasResponse = await axios.get(`${API_URL}/entradas?userId=${userId}`);
+      const allSaidasResponse = await axios.get(`${API_URL}/saidas?userId=${userId}`);
       
       const allEntradas = allEntradasResponse.data;
       const allSaidas = allSaidasResponse.data;
@@ -207,7 +208,7 @@ function Dashboard() {
       setCarregando(false);
 
       try {
-        const orcamentosResponse = await axios.get(`http://localhost:8080/api/orcamentos?userId=${userId}`);
+        const orcamentosResponse = await axios.get(`${API_URL}/orcamentos?userId=${userId}`);
         const gastoPorCategoria = {};
         saidasMesAtual.forEach((s) => {
           const cat = s.categoria || "outros";

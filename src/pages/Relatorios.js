@@ -40,6 +40,7 @@ import 'jspdf-autotable';
 import { format } from "date-fns";
 import { parseLocalDate, hojeISO } from "../utils/dates";
 import { PageSkeleton } from "../components/Skeletons";
+import { API_URL } from "../config";
 
 const MotionBox = motion(Box);
 
@@ -135,8 +136,8 @@ function Relatorios() {
     try {
       const userId = currentUser.uid;
       
-      const entradasResponse = await axios.get(`http://localhost:8080/api/entradas?userId=${userId}`);
-      const saidasResponse = await axios.get(`http://localhost:8080/api/saidas?userId=${userId}`);
+      const entradasResponse = await axios.get(`${API_URL}/entradas?userId=${userId}`);
+      const saidasResponse = await axios.get(`${API_URL}/saidas?userId=${userId}`);
       
       const fetchedEntradas = entradasResponse.data;
       const fetchedSaidas = saidasResponse.data;

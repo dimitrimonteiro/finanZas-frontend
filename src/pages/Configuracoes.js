@@ -30,6 +30,7 @@ import axios from "axios";
 import { hojeISO } from "../utils/dates";
 import WhatsappVinculo from "../components/WhatsappVinculo";
 import InformacoesConta from "../components/InformacoesConta";
+import { API_URL } from "../config";
 
 const MotionBox = motion(Box);
 
@@ -78,8 +79,8 @@ function Configuracoes() {
     try {
       const userId = currentUser.uid;
       
-      const entradasResponse = await axios.get(`http://localhost:8080/api/entradas?userId=${userId}`);
-      const saidasResponse = await axios.get(`http://localhost:8080/api/saidas?userId=${userId}`);
+      const entradasResponse = await axios.get(`${API_URL}/entradas?userId=${userId}`);
+      const saidasResponse = await axios.get(`${API_URL}/saidas?userId=${userId}`);
       
       const dataToExport = {
         metaData: {

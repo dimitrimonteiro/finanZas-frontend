@@ -13,8 +13,9 @@ import {
   useClipboard,
 } from "@chakra-ui/react";
 import axios from "axios";
+import { API_URL } from "../config";
 
-const API = "https://finanzas-backend-rmik.onrender.com/api";
+const API = API_URL;
 
 const formatarTempo = (s) =>
   `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;

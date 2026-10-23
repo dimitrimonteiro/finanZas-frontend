@@ -23,8 +23,9 @@ import {
   useToast,
 } from "@chakra-ui/react";
 import axios from "axios";
+import { API_URL } from "../config";
 
-const API = "http://localhost:8080/api/metas";
+const API = "`${API_URL}/metas`";
 
 const formatCurrency = (value) =>
   new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(value);
