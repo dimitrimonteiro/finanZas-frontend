@@ -257,6 +257,18 @@ function LoginPage() {
             </form>
 
             <Center>
+              <ChakraLink
+                as={RouterLink}
+                to="/esqueci-senha"
+                color="whiteAlpha.700"
+                fontSize="sm"
+                _hover={{ color: 'white', textDecoration: 'underline' }}
+              >
+                Esqueci minha senha
+              </ChakraLink>
+            </Center>
+
+            <Center>
               <Text color="whiteAlpha.700" fontSize="sm">
                 Não tem uma conta?{' '}
                 <ChakraLink 

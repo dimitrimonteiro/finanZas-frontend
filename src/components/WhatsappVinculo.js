@@ -14,7 +14,7 @@ import {
 } from "@chakra-ui/react";
 import axios from "axios";
 
-const API = "http://localhost:8080/api";
+const API = "https://finanzas-backend-rmik.onrender.com/api";
 
 const formatarTempo = (s) =>
   `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
@@ -51,6 +51,7 @@ function WhatsappVinculo() {
     setValue(codigo ? `CONECTAR ${codigo}` : "");
   }, [codigo, setValue]);
 
+  // Contagem regressiva do código
   useEffect(() => {
     if (!expiraEm) return undefined;
     const t = setInterval(() => {

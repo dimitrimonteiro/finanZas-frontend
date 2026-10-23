@@ -24,12 +24,12 @@ import {
   Divider,
   Spinner,
 } from "@chakra-ui/react";
-import { ViewIcon, ViewOffIcon } from '@chakra-ui/icons';
 import { motion } from "framer-motion";
 import { useAuth } from '../auth/AuthContext';
 import axios from "axios";
 import { hojeISO } from "../utils/dates";
 import WhatsappVinculo from "../components/WhatsappVinculo";
+import InformacoesConta from "../components/InformacoesConta";
 
 const MotionBox = motion(Box);
 
@@ -65,10 +65,6 @@ const GlassCard = ({ children, gradient, ...props }) => (
 );
 
 function Configuracoes() {
-  const [nome, setNome] = useState("");
-  const [email, setEmail] = useState("");
-  const [senha, setSenha] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const toast = useToast();
   const { colorMode, toggleColorMode } = useColorMode();
@@ -127,18 +123,6 @@ function Configuracoes() {
     } finally {
       setIsExporting(false);
     }
-  };
-
-  const handleSalvar = () => {
-    toast({
-      title: "✅ Configurações salvas!",
-      description: "Suas informações foram atualizadas.",
-      status: "success",
-      duration: 3000,
-      isClosable: true,
-      position: "top-right",
-    });
-    setSenha("");
   };
 
   const handleToggleColorMode = () => {
@@ -237,105 +221,7 @@ function Configuracoes() {
 
         <MotionBox variants={itemVariants} mb={6}>
           <GlassCard gradient="linear(to-br, #4facfe, #00f2fe)">
-            <VStack align="stretch" spacing={5}>
-              <HStack>
-                <Text fontSize="2xl">👤</Text>
-                <Heading size="md" color="white">
-                  Informações da Conta
-                </Heading>
-              </HStack>
-              <FormControl>
-                <FormLabel color="whiteAlpha.900" fontSize="sm" fontWeight="semibold">
-                  📝 Nome Completo
-                </FormLabel>
-                <Input
-                  value={nome}
-                  onChange={(e) => setNome(e.target.value)}
-                  placeholder="Digite seu nome"
-                  color="white"
-                  bg="rgba(255, 255, 255, 0.1)"
-                  border="1px solid"
-                  borderColor="whiteAlpha.300"
-                  _placeholder={{ color: 'whiteAlpha.500' }}
-                  _hover={{ borderColor: 'whiteAlpha.400' }}
-                  _focus={{ borderColor: 'blue.400', boxShadow: '0 0 0 1px #4facfe' }}
-                  size="lg"
-                  borderRadius="xl"
-                />
-              </FormControl>
-
-              <FormControl>
-                <FormLabel color="whiteAlpha.900" fontSize="sm" fontWeight="semibold">
-                  📧 Email
-                </FormLabel>
-                <Input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="seu@email.com"
-                  color="white"
-                  bg="rgba(255, 255, 255, 0.1)"
-                  border="1px solid"
-                  borderColor="whiteAlpha.300"
-                  _placeholder={{ color: 'whiteAlpha.500' }}
-                  _hover={{ borderColor: 'whiteAlpha.400' }}
-                  _focus={{ borderColor: 'blue.400', boxShadow: '0 0 0 1px #4facfe' }}
-                  size="lg"
-                  borderRadius="xl"
-                />
-              </FormControl>
-
-              <FormControl>
-                <FormLabel color="whiteAlpha.900" fontSize="sm" fontWeight="semibold">
-                  🔒 Nova Senha
-                </FormLabel>
-                <InputGroup size="lg">
-                  <Input
-                    type={showPassword ? 'text' : 'password'}
-                    value={senha}
-                    onChange={(e) => setSenha(e.target.value)}
-                    placeholder="Digite uma nova senha"
-                    color="white"
-                    bg="rgba(255, 255, 255, 0.1)"
-                    border="1px solid"
-                    borderColor="whiteAlpha.300"
-                    _placeholder={{ color: 'whiteAlpha.500' }}
-                    _hover={{ borderColor: 'whiteAlpha.400' }}
-                    _focus={{ borderColor: 'blue.400', boxShadow: '0 0 0 1px #4facfe' }}
-                    borderRadius="xl"
-                  />
-                  <InputRightElement>
-                    <IconButton
-                      aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}
-                      icon={showPassword ? <ViewOffIcon /> : <ViewIcon />}
-                      onClick={() => setShowPassword(!showPassword)}
-                      variant="ghost"
-                      color="whiteAlpha.700"
-                      _hover={{ bg: 'whiteAlpha.200' }}
-                      size="sm"
-                    />
-                  </InputRightElement>
-                </InputGroup>
-              </FormControl>
-
-              <Button
-                onClick={handleSalvar}
-                size="lg"
-                bgGradient="linear(to-r, #4facfe, #00f2fe)"
-                color="white"
-                _hover={{ 
-                  bgGradient: "linear(to-r, #00f2fe, #4facfe)",
-                  transform: "translateY(-2px)",
-                  boxShadow: "0 8px 24px rgba(79, 172, 254, 0.4)"
-                }}
-                transition="all 0.3s"
-                borderRadius="xl"
-                fontWeight="bold"
-                leftIcon={<Text>💾</Text>}
-              >
-                Salvar Alterações
-              </Button>
-            </VStack>
+            <InformacoesConta />
           </GlassCard>
         </MotionBox>
 

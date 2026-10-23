@@ -45,6 +45,7 @@ import Metas from './pages/Metas';
 import Recorrentes from './pages/Recorrentes';
 import Orcamentos from './pages/Orcamentos';
 import NotificationBell from './components/NotificationBell';
+import EsqueciSenhaPage from './pages/EsqueciSenha';
 
 import { AuthProvider, useAuth } from './auth/AuthContext';
 
@@ -357,6 +358,7 @@ function App() {
             <Routes>
               <Route path="/login" element={<LoginPage />} />
               <Route path="/cadastro" element={<CadastroPage />} />
+              <Route path="/esqueci-senha" element={<EsqueciSenhaPage />} />
               <Route element={<ProtectedRoutes />}>
                 <Route path="/" element={<Home />} />
                 <Route path="/entradas" element={<Entradas />} />
